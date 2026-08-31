@@ -152,7 +152,7 @@ git commit -m "build: bootstrap Menu CMake targets and tests"
 - `Menu::Domain::RuleBasedRecommendation::Rank(const RecommendationRequest&, const std::vector<Recipe>&)` returns at most three `Recommendation` values.
 - `Menu::Tests::RecipeFixtures::SingleRecipeWithIngredients(int, std::initializer_list<RecipeIngredient>)` returns a deterministic `Recipe` for unit tests.
 
-- [ ] **Step 1: Write the serving-scale RED test**
+- [x] **Step 1: Write the serving-scale RED test**
 
 ```cpp
 TEST(RecipeRulesTest, ScalesRequiredAndOptionalIngredientsByServingRatio) {
@@ -170,7 +170,7 @@ TEST(RecipeRulesTest, ScalesRequiredAndOptionalIngredientsByServingRatio) {
 }
 ```
 
-- [ ] **Step 2: Run the focused test and verify it fails for the missing domain API**
+- [x] **Step 2: Run the focused test and verify it fails for the missing domain API**
 
 Run:
 
@@ -180,11 +180,11 @@ ctest --preset WindowsDebug -R RecipeRulesTest --output-on-failure
 
 Expected: build/configuration failure naming the missing `RecipeRules` symbols, not a passing test or an unrelated compiler error.
 
-- [ ] **Step 3: Write RED tests for validation, aliases, availability, and recommendation filtering**
+- [x] **Step 3: Write RED tests for validation, aliases, availability, and recommendation filtering**
 
 Add one test per behavior: zero servings is rejected; duplicate step order is rejected; a registered alias normalizes to one Ingredient ID; pantry IDs affect missing count; an allergy hard-filters a recipe even when cuisine score is high; three recommendations are the maximum.
 
-- [ ] **Step 4: Implement the smallest pure domain model**
+- [x] **Step 4: Implement the smallest pure domain model**
 
 Use aggregate structs with explicit fields and no database/network includes:
 
@@ -227,7 +227,7 @@ struct Recipe {
 
 Keep normalization deterministic: trim ASCII whitespace, apply Unicode Chinese aliases from the supplied alias map, and never silently change a quantity or unit.
 
-- [ ] **Step 5: Run all domain tests and refactor only after GREEN**
+- [x] **Step 5: Run all domain tests and refactor only after GREEN**
 
 ```powershell
 cmake --build --preset WindowsDebug --parallel 2
@@ -236,7 +236,7 @@ ctest --preset WindowsDebug -R "RecipeRulesTest|RecommendationRulesTest" --outpu
 
 Expected: every focused test passes with no warning introduced by Menu code.
 
-- [ ] **Step 6: Commit the domain slice**
+- [x] **Step 6: Commit the domain slice**
 
 ```powershell
 git add server/Foundation server/Domain tests/unit
@@ -363,10 +363,10 @@ TEST(RecipeApplicationServiceTest, ReturnsOnlyThreeRecipesThatFitUserConstraints
     ASSERT_TRUE(Result.HasValue());
     ASSERT_LE(Result.Value().size(), 3U);
     for (const auto& Recommendation : Result.Value()) {
-        EXPECT_EQ(Recommendation.Recipe.Cuisine, "中餐");
-        EXPECT_EQ(Recommendation.Recipe.Allergens.end(),
-                  std::find(Recommendation.Recipe.Allergens.begin(),
-                            Recommendation.Recipe.Allergens.end(), "花生"));
+        EXPECT_EQ(Recommendation.RecipeValue.Cuisine, "中餐");
+        EXPECT_EQ(Recommendation.RecipeValue.Allergens.end(),
+                  std::find(Recommendation.RecipeValue.Allergens.begin(),
+                            Recommendation.RecipeValue.Allergens.end(), "花生"));
     }
 }
 ```
