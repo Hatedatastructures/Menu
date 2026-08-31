@@ -31,19 +31,19 @@ validate JSON/error status with an external HTTP client
 
 ## 模块与依赖
 
-```text
-MenuFoundation
-    <- MenuDomain
-    <- MenuApplication
-    <- MenuInfrastructure
-    <- MenuTransport
+下面箭头表示“右侧 target 依赖左侧 target”：
 
-MenuDomain <- MenuApplication
-MenuApplication <- MenuInfrastructure
-MenuApplication <- MenuApi
-MenuTransport <- MenuApi
-MenuApi <- MenuServer
+```text
+MenuDomain          -> MenuFoundation
+MenuApplication     -> MenuDomain, MenuFoundation
+MenuInfrastructure  -> MenuApplication, MenuDomain, MenuFoundation
+MenuTransportCore   -> MenuFoundation
+MenuTransport       -> MenuTransportCore, MenuFoundation
+MenuApi             -> MenuApplication, MenuTransportCore, MenuFoundation
+MenuServer          -> MenuApi, MenuTransport, MenuInfrastructure, MenuApplication
 ```
+
+configure 阶段递归检查 direct/interface link closure：`MenuTransportCore` 和 `MenuTransport` 的 closure 不得出现 `MenuApi`，`MenuApi` 的 closure 只能出现 `MenuTransportCore` 而不能出现具体 `MenuTransport`，`MenuServer` 必须是同时组装两者的唯一 composition root。
 
 ### MenuFoundation
 
@@ -97,9 +97,9 @@ public:
 
 ### MenuTransport 与 MenuApi
 
-`MenuTransport` 用 Boost.Beast + Boost.Asio 异步接收 HTTP/1.1 请求，连接 session 由 `std::enable_shared_from_this` 管理，读写串行化到 per-connection strand，设置请求体大小上限和超时。
+`MenuTransportCore` 只提供中立的 `HttpRequest`、`HttpResponse`、`HttpHandler`/router 注入接口。`MenuTransport` 使用 Boost.Beast + Boost.Asio 异步接收 HTTP/1.1，连接 session 由 `std::enable_shared_from_this` 管理，读写串行化到 per-connection strand，设置请求体大小上限和超时；两个 Transport target 都不链接 `MenuApi`。
 
-`MenuApi` 将请求转换为边界 DTO，做路径/查询/JSON 校验，把阻塞的 Application 调用投递到 worker executor，再将响应投递回连接 executor。统一错误格式：
+`MenuApi` 只链接 `MenuTransportCore`，实现注入的 handler，将请求转换为边界 DTO，做路径/查询/JSON 校验，把阻塞的 Application 调用投递到 worker executor，再将响应投递回连接 executor。`MenuServer` 创建 `MenuTransport` listener 并注入 `MenuApi` handler，避免 Api 创建具体 listener 或 Transport 反向链接 Api。统一错误格式：
 
 ```json
 {

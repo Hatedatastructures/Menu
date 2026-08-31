@@ -44,27 +44,28 @@ Admin React/Vite ------ HTTPS/JSON ------ MenuApi
 
 目标名和源文件名统一使用 PascalCase；协议字段、JSON key、SQL 列名和第三方宏遵循外部约定。
 
-```text
-MenuFoundation
-    <- MenuDomain
-    <- MenuApplication
-    <- MenuInfrastructure
-    <- MenuTransport
+下面箭头表示“右侧 target 依赖左侧 target”，而不是继承关系：
 
-MenuDomain <- MenuApplication
-MenuApplication <- MenuInfrastructure
-MenuApplication <- MenuApi
-MenuTransport <- MenuApi
-MenuApi <- MenuServer
+```text
+MenuDomain          -> MenuFoundation
+MenuApplication     -> MenuDomain, MenuFoundation
+MenuInfrastructure  -> MenuApplication, MenuDomain, MenuFoundation
+MenuTransportCore   -> MenuFoundation
+MenuTransport       -> MenuTransportCore, MenuFoundation
+MenuApi             -> MenuApplication, MenuTransportCore, MenuFoundation
+MenuServer          -> MenuApi, MenuTransport, MenuInfrastructure, MenuApplication
 ```
 
 - `MenuFoundation`：配置、Result/Error、时钟、输入尺寸限制、日志脱敏和公共 ID。
 - `MenuDomain`：User、Preference、Ingredient、Recipe、RecipeIngredient、RecipeStep、MealPlan、MealPlanItem、Reminder、CookingSession、Feedback、MediaAsset，以及份量换算、别名归一化、替代规则和提醒调度等无 I/O 规则。
 - `MenuApplication`：用例服务、事务边界、仓储/时钟/推荐端口和 `RecommendationProvider`。确定性规则提供默认实现，模型实现只能通过端口接入并经过 JSON/过敏原/数量/单位/步骤/时间校验。
 - `MenuInfrastructure`：SQLite 连接、迁移、种子数据、参数化 SQL 仓储、WAL checkpoint、密码哈希、token 存储和本地媒体。
-- `MenuTransport`：Boost.Asio executor、HTTP listener、连接生命周期和可选 WebSocket；不包含菜谱业务。
-- `MenuApi`：路由、DTO、Boost.JSON 序列化、认证授权、CORS、统一错误响应和输入校验。
-- `MenuServer`：唯一 composition root，负责配置读取、依赖组装、监听和优雅退出。
+- `MenuTransportCore`：只定义中立的 `HttpRequest`、`HttpResponse`、`HttpHandler`/router 注入接口，不包含菜谱业务，不依赖具体 listener。
+- `MenuTransport`：用 Boost.Asio/Beast 实现 HTTP listener、连接生命周期和可选 WebSocket；只依赖 `MenuTransportCore`，不链接 `MenuApi`。
+- `MenuApi`：实现路由和用例适配，消费 `MenuTransportCore` 的中立 HTTP 类型，负责 DTO、Boost.JSON 序列化、认证授权、CORS、统一错误响应和输入校验；不创建或持有具体 listener。
+- `MenuServer`：唯一 composition root，负责配置读取、依赖组装，把 `MenuApi` 的 handler 注入 `MenuTransport` listener，然后监听和优雅退出。
+
+配置阶段递归检查 target link closure：`MenuTransportCore` 和 `MenuTransport` 的 closure 不得出现 `MenuApi`，`MenuApi` 的 closure 只能出现 `MenuTransportCore` 而不能出现具体 `MenuTransport`，`MenuServer` 必须同时连接两者。该检查用于防止 `MenuApi <-> MenuTransport` 循环依赖，而不是依赖人工阅读 CMake。
 
 生产目标不依赖测试支持；测试目标按 Production、Preview/Client contract 和 API integration 分开，避免测试辅助库反向污染生产依赖。
 
