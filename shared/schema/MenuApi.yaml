@@ -1,0 +1,48 @@
+openapi: 3.1.0
+info:
+  title: Menu API
+  version: 0.1.0
+  description: 家庭做饭执行器的版本化 HTTP API。
+servers:
+  - url: http://127.0.0.1:8080
+paths:
+  /healthz:
+    get:
+      operationId: GetHealth
+      responses:
+        '200':
+          description: 进程存活
+  /readyz:
+    get:
+      operationId: GetReadiness
+      responses:
+        '200':
+          description: 迁移和种子数据就绪
+        '503':
+          description: 服务未就绪
+  /api/v1/recipes:
+    get:
+      operationId: ListRecipes
+      responses:
+        '200':
+          description: 已发布菜谱列表
+  /api/v1/recipes/{id}:
+    get:
+      operationId: GetRecipe
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: 菜谱详情
+        '404':
+          description: 菜谱不存在
+  /api/v1/recommendations/tonight:
+    post:
+      operationId: RecommendTonight
+      responses:
+        '200':
+          description: 最多三个确定性推荐

@@ -37,8 +37,10 @@
 - Create: `server/Infrastructure/CMakeLists.txt`
 - Create: `server/Transport/CMakeLists.txt`
 - Create: `server/Api/CMakeLists.txt`
+- Create: `server/Main.cpp`
 - Create: `tests/CMakeLists.txt`
 - Create: `tests/unit/CMakeLists.txt`
+- Create: `tests/unit/BootstrapContractTest.cpp`
 - Create: `tests/TestMain.cpp`
 - Create: `shared/schema/MenuApi.yaml`
 
@@ -47,13 +49,13 @@
 - Produces presets `WindowsDebug`, `WindowsRelease`, and `WindowsAsan` with `compile_commands.json` and `I:\code\Menu\build\<preset>` binary directories.
 - `TargetBoundaries.cmake` exposes `AssertMenuTargetBoundaries()` and fails configure if `MenuTransportCore`/`MenuTransport` closure contains `MenuApi`, if `MenuApi` closure contains concrete `MenuTransport`, or if any target has a direct dependency on itself.
 
-- [ ] **Step 1: Write the configure contract test**
+- [x] **Step 1: Write the configure contract test**
 
 Create the first CTest registration and a test executable that includes the future Foundation header. The test is intentionally not implementable yet; this makes the first behavior RED after configure.
 
 ```cpp
 #include <gtest/gtest.h>
-#include <Menu/Foundation/Result.hpp>
+#include <Foundation/Result.hpp>
 
 TEST(BootstrapContractTest, BuildsWithCxx20AndFoundationTarget) {
     const Menu::Foundation::Result<int> Result = 7;
@@ -62,7 +64,7 @@ TEST(BootstrapContractTest, BuildsWithCxx20AndFoundationTarget) {
 }
 ```
 
-- [ ] **Step 2: Run configure and record the expected RED**
+- [x] **Step 2: Run configure and record the expected RED**
 
 Run:
 
@@ -73,7 +75,7 @@ cmake --build --preset WindowsDebug --parallel 2
 
 Expected: configure can resolve the declared dependencies, then compilation fails because `Menu/Foundation/Result.hpp` does not exist. Do not add a production header in this task to make the test green.
 
-- [ ] **Step 3: Add minimal build wiring and the dependency-direction assertion**
+- [x] **Step 3: Add minimal build wiring and the dependency-direction assertion**
 
 `CMakePresets.json` must use the existing compiler without installing into C drive:
 
@@ -106,11 +108,11 @@ Expected: configure can resolve the declared dependencies, then compilation fail
 }
 ```
 
-`cmake/Dependencies.cmake` declares Boost 1.89.0 and GoogleTest with official URLs and SHA256, and creates a header-only `MenuBoost` interface exposing Boost.Asio/Beast/JSON/System. `cmake/TargetBoundaries.cmake` traverses `LINK_LIBRARIES` and `INTERFACE_LINK_LIBRARIES` for in-project targets and emits the closure in the configure error/status message.
+`cmake/Dependencies.cmake` declares Boost 1.89.0 and GoogleTest with official URLs and SHA256, creates a header-only `MenuBoost` interface exposing Boost.Asio/Beast/System, and builds `MenuBoostJson` from Boost.JSON's supported separate-compilation source so JSON symbols are linked explicitly. `cmake/TargetBoundaries.cmake` traverses `LINK_LIBRARIES` and `INTERFACE_LINK_LIBRARIES` for in-project targets and emits the closure in the configure error/status message.
 
 The transport boundary is explicit: `MenuTransportCore` contains `HttpRequest`, `HttpResponse`, and `HttpHandler`; `MenuTransport` contains only the Beast listener/session implementation; `MenuApi` links Core and implements a handler; the listener accepts the injected handler without including any Api header. Neither Transport target may link `MenuApi`.
 
-- [ ] **Step 4: Verify the RED build and configuration properties**
+- [x] **Step 4: Verify the RED build and configuration properties**
 
 Run:
 
@@ -120,7 +122,7 @@ cmake --build --preset WindowsDebug --parallel 2
 
 Expected: non-zero exit with the missing `Menu/Foundation/Result.hpp` include. Then inspect `build\WindowsDebug\CMakeCache.txt` and confirm `CMAKE_CXX_STANDARD=20`, `FETCHCONTENT_BASE_DIR` starts with `I:\code\Menu`, and no dependency source is under `C:\Users`.
 
-- [ ] **Step 5: Commit the bootstrap**
+- [x] **Step 5: Commit the bootstrap**
 
 ```powershell
 git add CMakeLists.txt CMakePresets.json cmake server tests shared

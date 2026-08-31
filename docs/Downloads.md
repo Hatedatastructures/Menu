@@ -4,7 +4,7 @@
 
 ## Phase 0 下载记录
 
-Phase 0 没有下载新工具或库，没有使用代理，也没有修改全局代理配置。下面的路径是后续唯一允许的项目缓存位置：
+Phase 0 没有下载新工具或库，没有使用代理，也没有修改全局代理配置。Phase 1 fresh configure 下载了下面两项，未使用代理；下载发生在当前 PowerShell 进程，未修改全局配置。下面的路径是后续唯一允许的项目缓存位置：
 
 | 用途 | 目标路径 |
 | --- | --- |
@@ -14,6 +14,13 @@ Phase 0 没有下载新工具或库，没有使用代理，也没有修改全局
 | Android SDK/NDK/JDK | `I:\code\Menu\.tools\android-sdk` 或 `I:\android` |
 | Gradle 用户目录 | `I:\code\Menu\.gradle` |
 | npm 缓存 | `I:\code\Menu\.npm-cache` |
+
+## 已下载记录
+
+| 工具/库 | 版本 | URL | 文件路径 | 大小 | SHA256 | 代理 |
+| --- | --- | --- | --- | ---: | --- | --- |
+| Boost | 1.89.0 | https://archives.boost.io/release/1.89.0/source/boost_1_89_0.tar.bz2 | `I:\code\Menu\.cache\cmake-fetch\boostsource-subbuild\boostsource-populate-prefix\src\boost_1_89_0.tar.bz2` | 154699732 bytes | `85A33FA22621B4F314F8E85E1A5E2A9363D22E4F4992925D4BB3BC631B5A0C7A` | 未使用 |
+| GoogleTest | 1.16.0 | https://github.com/google/googletest/archive/refs/tags/v1.16.0.tar.gz | `I:\code\Menu\.cache\cmake-fetch\googletest-subbuild\googletest-populate-prefix\src\v1.16.0.tar.gz` | 876245 bytes | `78C676FC63881529BF97BF9D45948D905A66833FBFA5318EA2CD7478CB98F399` | 未使用 |
 
 ## 当前可复用环境
 

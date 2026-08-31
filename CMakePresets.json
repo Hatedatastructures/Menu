@@ -1,0 +1,95 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 23,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "WindowsBase",
+      "hidden": true,
+      "generator": "MinGW Makefiles",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+        "CMAKE_CXX_EXTENSIONS": "OFF",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_C_COMPILER": "C:/msys64/ucrt64/bin/gcc.exe",
+        "CMAKE_CXX_COMPILER": "C:/msys64/ucrt64/bin/g++.exe",
+        "MENU_ENABLE_TESTS": "ON",
+        "FETCHCONTENT_BASE_DIR": "${sourceDir}/.cache/cmake-fetch"
+      }
+    },
+    {
+      "name": "WindowsDebug",
+      "inherits": "WindowsBase",
+      "displayName": "Windows Debug",
+      "description": "Debug build using the existing MSYS2 UCRT64 compiler",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug"
+      }
+    },
+    {
+      "name": "WindowsRelease",
+      "inherits": "WindowsBase",
+      "displayName": "Windows Release",
+      "description": "Release build using the existing MSYS2 UCRT64 compiler",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release"
+      }
+    },
+    {
+      "name": "WindowsAsan",
+      "inherits": "WindowsBase",
+      "displayName": "Windows AddressSanitizer",
+      "description": "Debug build with AddressSanitizer when supported by the compiler",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_FLAGS": "-fsanitize=address -fno-omit-frame-pointer",
+        "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "WindowsDebug",
+      "configurePreset": "WindowsDebug",
+      "jobs": 2
+    },
+    {
+      "name": "WindowsRelease",
+      "configurePreset": "WindowsRelease",
+      "jobs": 2
+    },
+    {
+      "name": "WindowsAsan",
+      "configurePreset": "WindowsAsan",
+      "jobs": 2
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "WindowsDebug",
+      "configurePreset": "WindowsDebug",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "WindowsRelease",
+      "configurePreset": "WindowsRelease",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "WindowsAsan",
+      "configurePreset": "WindowsAsan",
+      "output": {
+        "outputOnFailure": true
+      }
+    }
+  ]
+}

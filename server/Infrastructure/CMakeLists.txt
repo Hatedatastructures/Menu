@@ -1,0 +1,3 @@
+add_library(MenuInfrastructure INTERFACE)
+target_include_directories(MenuInfrastructure INTERFACE "${PROJECT_SOURCE_DIR}/server")
+target_link_libraries(MenuInfrastructure INTERFACE MenuApplication MenuDomain MenuFoundation)
