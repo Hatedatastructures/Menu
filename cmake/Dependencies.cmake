@@ -45,3 +45,38 @@ add_library(MenuBoostJson STATIC "${PROJECT_SOURCE_DIR}/cmake/BoostJson.cpp")
 target_link_libraries(MenuBoostJson PUBLIC MenuBoost)
 set_target_properties(MenuBoostJson PROPERTIES POSITION_INDEPENDENT_CODE ON)
 
+set(MenuSqliteCachedSourceDir
+    "${PROJECT_SOURCE_DIR}/.cache/sqlite/sqlite-amalgamation-3530400"
+)
+if(EXISTS "${MenuSqliteCachedSourceDir}/sqlite3.c")
+    set(FETCHCONTENT_SOURCE_DIR_SQLITESOURCE "${MenuSqliteCachedSourceDir}" CACHE PATH
+        "Use the existing Menu SQLite source cache")
+endif()
+
+FetchContent_Declare(
+    SQLiteSource
+    URL https://www.sqlite.org/2026/sqlite-amalgamation-3530400.zip
+    URL_HASH SHA256=1E71DDF93849C6A6ECF58B827C0692073D2DD7EE40196158068F7B29F422E87D
+    DOWNLOAD_EXTRACT_TIMESTAMP TRUE
+)
+FetchContent_GetProperties(SQLiteSource)
+if(NOT sqlitesource_POPULATED)
+    FetchContent_Populate(SQLiteSource)
+endif()
+
+set(MenuSqliteSourceDir "${sqlitesource_SOURCE_DIR}")
+if(EXISTS "${MenuSqliteSourceDir}/sqlite-amalgamation-3530400/sqlite3.c")
+    set(MenuSqliteSourceDir
+        "${MenuSqliteSourceDir}/sqlite-amalgamation-3530400")
+endif()
+if(NOT EXISTS "${MenuSqliteSourceDir}/sqlite3.c")
+    message(FATAL_ERROR "SQLite amalgamation source was not found in ${MenuSqliteSourceDir}")
+endif()
+
+add_library(MenuSqlite STATIC "${MenuSqliteSourceDir}/sqlite3.c")
+target_include_directories(MenuSqlite PUBLIC "${MenuSqliteSourceDir}")
+target_compile_definitions(MenuSqlite PUBLIC
+    SQLITE_THREADSAFE=1
+    SQLITE_DQS=0
+)
+set_target_properties(MenuSqlite PROPERTIES POSITION_INDEPENDENT_CODE ON)

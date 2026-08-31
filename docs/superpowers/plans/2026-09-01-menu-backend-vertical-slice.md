@@ -6,7 +6,7 @@
 
 **Architecture:** `MenuFoundation` 提供无业务的错误、Result 和 ID；`MenuDomain` 保持纯规则；`MenuApplication` 依赖仓储和推荐端口；`MenuInfrastructure` 在受控 storage executor 中访问 SQLite；`MenuTransportCore` 只提供中立 HTTP 类型和 handler 注入协议；`MenuTransport` 实现 listener；`MenuApi` 只链接 Core 并实现路由和用例适配；`MenuServer` 是唯一 composition root。
 
-**Tech Stack:** C++20, CMake 3.23+, Boost 1.89.0 (Asio/Beast/JSON/System), SQLite 3.51.1 amalgamation, OpenSSL scrypt (认证切片预留), GoogleTest, CTest, PowerShell HTTP smoke。
+**Tech Stack:** C++20, CMake 3.23+, Boost 1.89.0 (Asio/Beast/JSON/System), SQLite 3.53.4 amalgamation, OpenSSL scrypt (认证切片预留), GoogleTest, CTest, PowerShell HTTP smoke。
 
 **Spec:** `docs/superpowers/specs/2026-09-01-menu-backend-vertical-slice-design.md`
 
@@ -268,7 +268,7 @@ git commit -m "feat: add recipe domain rules and recommendations"
 - `SeedData::InsertIfEmpty(SqliteDatabase&)` inserts deterministic recipes/ingredients only when the relevant tables are empty.
 - `Menu::Tests::DatabaseFixtures::OpenTemporary()` returns an opened temporary `SqliteDatabase` whose file is deleted by the fixture destructor.
 
-- [ ] **Step 1: Write the migration RED test**
+- [x] **Step 1: Write the migration RED test**
 
 ```cpp
 TEST(SqliteMigrationTest, AppliesSchemaAndEnablesWalAndForeignKeys) {
@@ -281,7 +281,7 @@ TEST(SqliteMigrationTest, AppliesSchemaAndEnablesWalAndForeignKeys) {
 }
 ```
 
-- [ ] **Step 2: Run it and verify the failure is caused by missing storage code**
+- [x] **Step 2: Run it and verify the failure is caused by missing storage code**
 
 ```powershell
 ctest --preset WindowsDebug -R SqliteMigrationTest --output-on-failure
@@ -289,25 +289,25 @@ ctest --preset WindowsDebug -R SqliteMigrationTest --output-on-failure
 
 Expected: compile failure for missing `SqliteDatabase`/`MigrationRunner`, before any schema assertion runs.
 
-- [ ] **Step 3: Add the schema and SQLite dependency target**
+- [x] **Step 3: Add the schema and SQLite dependency target**
 
 `001Initial.sql` must create `SchemaMigration`, `Users`, `Preferences`, `Ingredients`, `IngredientAliases`, `Recipes`, `RecipeIngredients`, `RecipeSteps`, `MealPlans`, `MealPlanItems`, `Reminders`, `CookingSessions`, `Feedback`, `MediaAssets`, and `RefreshTokens`. Use `RecipeId` plus `(RecipeId, StepOrder)` uniqueness, foreign keys with explicit delete behavior, and `CHECK` constraints for positive quantities, non-negative durations, valid status, and supported units.
 
 Fetch the SQLite 3.51.1 amalgamation into `I:\code\Menu\.cache\cmake-fetch`, compute SHA256, and append URL/version/path/size/hash to `docs/Downloads.md` before committing.
 
-- [ ] **Step 4: Implement connection setup and migration transaction**
+- [x] **Step 4: Implement connection setup and migration transaction**
 
 Open SQLite with `SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX`, execute `PRAGMA journal_mode=WAL`, `PRAGMA foreign_keys=ON`, and `PRAGMA busy_timeout=5000`, then run each migration in one transaction. Bind every value through `sqlite3_bind_*`; only fixed migration SQL may be passed as text.
 
-- [ ] **Step 5: Write repository RED tests**
+- [x] **Step 5: Write repository RED tests**
 
 Cover: seed data is returned only when `Status='published'`; unknown ID returns an empty optional; a recipe with two ingredients and two ordered steps round-trips; a failed transaction leaves no partial recipe; a second migration run does not add a version row.
 
-- [ ] **Step 6: Implement repository and seed data**
+- [x] **Step 6: Implement repository and seed data**
 
 Use prepared statements with explicit column lists. Seed at least twelve representative recipes in this slice across Chinese, Western, and Japanese cuisines, with local image paths that will later be backed by `assets/media`; scale content to 60-100 recipes before product release.
 
-- [ ] **Step 7: Verify storage tests and database diagnostics**
+- [x] **Step 7: Verify storage tests and database diagnostics**
 
 ```powershell
 cmake --build --preset WindowsDebug --parallel 2
@@ -316,7 +316,7 @@ ctest --preset WindowsDebug -R "SqliteMigrationTest|SqliteRecipeRepositoryTest" 
 
 Expected: all storage tests pass; test output reports the temporary database uses WAL and no temporary file is left in the repository.
 
-- [ ] **Step 8: Commit the storage slice**
+- [x] **Step 8: Commit the storage slice**
 
 ```powershell
 git add cmake server/Infrastructure tests/unit docs/Downloads.md
