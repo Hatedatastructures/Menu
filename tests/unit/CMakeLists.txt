@@ -46,3 +46,19 @@ gtest_discover_tests(MenuRecipeRepositoryTests
     DISCOVERY_MODE PRE_TEST
     PROPERTIES TIMEOUT 30
 )
+
+add_executable(MenuApplicationTests
+    "${PROJECT_SOURCE_DIR}/tests/TestMain.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/unit/RecipeApplicationServiceTest.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/unit/StorageExecutorTest.cpp"
+)
+target_include_directories(MenuApplicationTests PRIVATE
+    "${PROJECT_SOURCE_DIR}/server"
+    "${PROJECT_SOURCE_DIR}/tests"
+)
+target_link_libraries(MenuApplicationTests PRIVATE GTest::gtest MenuApplication MenuDomain)
+target_compile_features(MenuApplicationTests PRIVATE cxx_std_20)
+gtest_discover_tests(MenuApplicationTests
+    DISCOVERY_MODE PRE_TEST
+    PROPERTIES TIMEOUT 30
+)

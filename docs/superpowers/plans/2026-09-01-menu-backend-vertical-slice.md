@@ -344,7 +344,7 @@ git commit -m "feat: add sqlite migrations and recipe repository"
 - `StorageExecutor::Submit(Work, Completion)` runs work on an Asio executor and posts completion to the caller executor; it owns shutdown and does not detach tasks that borrow request state.
 - `Menu::Tests::ApplicationFixtures::WithSeedRecipes()` returns an application service backed by deterministic in-memory test repositories.
 
-- [ ] **Step 1: Write the application RED test**
+- [x] **Step 1: Write the application RED test**
 
 ```cpp
 TEST(RecipeApplicationServiceTest, ReturnsOnlyThreeRecipesThatFitUserConstraints) {
@@ -371,7 +371,7 @@ TEST(RecipeApplicationServiceTest, ReturnsOnlyThreeRecipesThatFitUserConstraints
 }
 ```
 
-- [ ] **Step 2: Run the focused test and verify the expected missing-service RED**
+- [x] **Step 2: Run the focused test and verify the expected missing-service RED**
 
 ```powershell
 ctest --preset WindowsDebug -R RecipeApplicationServiceTest --output-on-failure
@@ -379,19 +379,19 @@ ctest --preset WindowsDebug -R RecipeApplicationServiceTest --output-on-failure
 
 Expected: failure for missing Application service symbols, not a test that passes against hard-coded fixtures.
 
-- [ ] **Step 3: Implement rule provider and service**
+- [x] **Step 3: Implement rule provider and service**
 
 Use a fixed scoring tuple `(CuisineMatch, PantryCoverage, RecentPenalty, Difficulty, RecipeId)` so ordering is stable across platforms. Apply allergies, max minutes, cookware, status and serving validity before scoring. The provider must not access SQLite or Asio.
 
-- [ ] **Step 4: Write executor ownership test**
+- [x] **Step 4: Write executor ownership test**
 
 Submit 20 tasks from two threads, record completion IDs, assert all 20 complete and no completion runs after `Shutdown()`. Use a value-owned input, not a reference to a stack request, to make the ownership rule observable.
 
-- [ ] **Step 5: Implement bounded storage executor**
+- [x] **Step 5: Implement bounded storage executor**
 
 Use `boost::asio::thread_pool` with one writer strand and a bounded read pool. Each work item stores its input by value and captures a `std::shared_ptr` state for completion; no detached coroutine captures `this` or a borrowed request. Expose `Join()` for deterministic tests and server shutdown.
 
-- [ ] **Step 6: Verify application tests and commit**
+- [x] **Step 6: Verify application tests and commit**
 
 ```powershell
 cmake --build --preset WindowsDebug --parallel 2

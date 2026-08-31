@@ -40,6 +40,9 @@ target_compile_definitions(MenuBoost INTERFACE
     BOOST_SYSTEM_NO_LIB
 )
 target_compile_features(MenuBoost INTERFACE cxx_std_20)
+if(WIN32)
+    target_link_libraries(MenuBoost INTERFACE ws2_32)
+endif()
 
 add_library(MenuBoostJson STATIC "${PROJECT_SOURCE_DIR}/cmake/BoostJson.cpp")
 target_link_libraries(MenuBoostJson PUBLIC MenuBoost)
