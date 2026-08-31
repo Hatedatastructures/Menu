@@ -40,6 +40,24 @@ paths:
           description: 菜谱详情
         '404':
           description: 菜谱不存在
+  /api/v1/ingredients:
+    get:
+      operationId: ListIngredients
+      responses:
+        '200':
+          description: 可直接显示的规范化食材列表
+  /api/v1/auth/register:
+    post:
+      operationId: Register
+      responses:
+        '401':
+          description: 认证切片预留
+  /api/v1/auth/login:
+    post:
+      operationId: Login
+      responses:
+        '401':
+          description: 认证切片预留
   /api/v1/recommendations/tonight:
     post:
       operationId: RecommendTonight

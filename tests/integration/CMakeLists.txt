@@ -16,3 +16,23 @@ gtest_discover_tests(MenuTransportIntegrationTests
     DISCOVERY_MODE PRE_TEST
     PROPERTIES TIMEOUT 30
 )
+
+add_executable(MenuApiIntegrationTests
+    "${PROJECT_SOURCE_DIR}/tests/TestMain.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/integration/MenuApiTest.cpp"
+)
+target_include_directories(MenuApiIntegrationTests PRIVATE
+    "${PROJECT_SOURCE_DIR}/server"
+    "${PROJECT_SOURCE_DIR}/tests"
+)
+target_link_libraries(MenuApiIntegrationTests PRIVATE
+    GTest::gtest
+    MenuApi
+    MenuInfrastructure
+    MenuTransport
+)
+target_compile_features(MenuApiIntegrationTests PRIVATE cxx_std_20)
+gtest_discover_tests(MenuApiIntegrationTests
+    DISCOVERY_MODE PRE_TEST
+    PROPERTIES TIMEOUT 30
+)

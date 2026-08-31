@@ -75,6 +75,7 @@ MenuServer          -> MenuApi, MenuTransport, MenuInfrastructure, MenuApplicati
 - HTTP handler 只做边界解析和调度。SQLite、文件媒体读取、密码哈希等可能阻塞的操作投递到明确的 storage/worker executor，完成后回到请求 executor。
 - SQLite 写入由单一写 actor/strand 串行化；读操作可使用受控连接池。所有写入使用参数化 SQL 和事务。
 - UI 的网络、磁盘和图片解码不能同步阻塞 GUI 线程。Qt 模型批量更新，ListView delegate 尺寸稳定且不在 delegate 中保存业务状态。
+- 客户端离线 Recipe 快照必须保存每个食材的 `IngredientId`、`IngredientName`、`IngredientCategory`、`IngredientDefaultUnit`、`IngredientIsPantryStaple`、数量、单位、处理方式和必需标记；离线渲染不能再依赖一次额外的食材请求。`GET /api/v1/ingredients` 使用同一套显示字段供食材页和缓存预热使用。
 - WebSocket 只在计划/提醒同步有真实需求时启用；首版 HTTP API 和离线缓存优先，避免为展示而增加协议复杂度。
 
 ## 数据与安全基线

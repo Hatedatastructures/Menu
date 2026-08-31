@@ -13,6 +13,10 @@ struct RecipeIngredient {
     bool Required = true;
     double ServingFactor = 1.0;
     std::string Preparation;
+    std::string IngredientName;
+    std::string IngredientCategory;
+    std::string IngredientDefaultUnit;
+    bool IngredientIsPantryStaple = false;
 
     RecipeIngredient() = default;
 

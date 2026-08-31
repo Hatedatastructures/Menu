@@ -8,6 +8,7 @@ add_library(MenuInfrastructure STATIC
     SqliteDatabase.cpp
     MigrationRunner.cpp
     SqliteRecipeRepository.cpp
+    SqliteIngredientRepository.cpp
     SeedData.cpp
 )
 target_include_directories(MenuInfrastructure PUBLIC

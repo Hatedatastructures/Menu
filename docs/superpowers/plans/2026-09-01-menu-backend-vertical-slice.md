@@ -473,7 +473,7 @@ git commit -m "feat: add asynchronous neutral http transport"
 - `RecipeDtos::ToJson(const Recipe&)` and `ToJson(const Recommendation&)` use Boost.JSON and fixed external keys.
 - `MenuServer` parses config, opens SQLite, applies migrations, seeds data, starts transport and waits for SIGINT/SIGTERM or Windows console close.
 
-- [ ] **Step 1: Write API integration RED tests against a real port**
+- [x] **Step 1: Write API integration RED tests against a real port**
 
 The test process must start `MenuServer` or the same composition root in-process, then use an external-style Beast HTTP client. Cover:
 
@@ -482,12 +482,13 @@ GET /healthz                         -> 200 {"status":"ok"}
 GET /readyz                          -> 200 after migration
 GET /api/v1/recipes                  -> 200, only published recipes
 GET /api/v1/recipes/{knownId}        -> 200, ingredients and steps
+GET /api/v1/ingredients              -> 200, display-ready ingredient fields
 GET /api/v1/recipes/does-not-exist   -> 404, error.code=recipe_not_found
 GET /api/v1/recipes?limit=101        -> 400, error.code=invalid_query
 POST /api/v1/recommendations/tonight -> 200, <=3 recommendations
 ```
 
-- [ ] **Step 2: Run integration tests and verify RED**
+- [x] **Step 2: Run integration tests and verify RED**
 
 ```powershell
 ctest --preset WindowsDebug -R MenuApiTest --output-on-failure
@@ -495,21 +496,21 @@ ctest --preset WindowsDebug -R MenuApiTest --output-on-failure
 
 Expected: compile or connection failure because the API router/composition root is not implemented.
 
-- [ ] **Step 3: Implement DTOs and route validation**
+- [x] **Step 3: Implement DTOs and route validation**
 
-Parse query values with bounded integer conversion; reject empty/overlong IDs, invalid cuisine values, `limit < 1`, `limit > 100`, missing recommendation body, non-positive servings and negative available minutes. Responses always include `requestId` and set `application/json; charset=utf-8`.
+Parse query values with bounded integer conversion; reject empty/overlong IDs, invalid cuisine values, `limit < 1`, `limit > 100`, missing recommendation body, non-positive servings and negative available minutes. Recipe ingredient DTOs include `ingredientName`, `category`, `defaultUnit`, and `isPantryStaple`; `/api/v1/ingredients` returns the same display fields plus aliases and SKU mapping. Responses always include `requestId` and set `application/json; charset=utf-8`.
 
-- [ ] **Step 4: Implement asynchronous application dispatch**
+- [x] **Step 4: Implement asynchronous application dispatch**
 
 `ApiRouter` must copy request inputs into a worker task, call the synchronous Application service only on `StorageExecutor`, and post the serialized response back through the session executor. Do not call SQLite from the read handler. Handle worker failure as `503 storage_unavailable` without exposing SQL text or file paths.
 
-- [ ] **Step 5: Implement server startup and graceful shutdown**
+- [x] **Step 5: Implement server startup and graceful shutdown**
 
 Read `config/Menu.example.json` defaults: `127.0.0.1:8080`, `server/data/menu.db`, `assets/media`, body limit 1 MiB, CORS allowlist empty. Create directories, migrate, seed, start io_context threads sized to `max(2, hardware_concurrency/2)` and join all executors on exit.
 
-`MenuServer` is the only target allowed to compose `MenuApi` and `MenuTransport`: `MenuApi` implements the injected handler and links only `MenuTransportCore`, `MenuTransport` owns the listener, and neither target may include the other's concrete implementation headers.
+`MenuServer` is the only target allowed to compose `MenuApi` and `MenuTransport`: `MenuApi` implements the injected handler and links only `MenuTransportCore`, `MenuTransport` owns the listener, and neither target may include the other's concrete implementation headers. The client cache contract stores all recipe ingredient display fields so offline pages do not make a second request.
 
-- [ ] **Step 6: Verify the real process with curl and commit**
+- [x] **Step 6: Verify the real process with curl and commit**
 
 ```powershell
 cmake --build --preset WindowsDebug --parallel 2

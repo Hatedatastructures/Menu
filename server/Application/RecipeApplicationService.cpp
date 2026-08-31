@@ -6,8 +6,11 @@ namespace Menu::Application {
 
 RecipeApplicationService::RecipeApplicationService(
     std::unique_ptr<RecipeRepository> RepositoryValue,
-    std::unique_ptr<RecommendationProvider> ProviderValue)
-    : Repository(std::move(RepositoryValue)), Provider(std::move(ProviderValue)) {}
+    std::unique_ptr<RecommendationProvider> ProviderValue,
+    std::unique_ptr<IngredientRepository> IngredientRepositoryValue)
+    : Repository(std::move(RepositoryValue)),
+      Provider(std::move(ProviderValue)),
+      Ingredients(std::move(IngredientRepositoryValue)) {}
 
 Foundation::Result<std::vector<Domain::Recipe>>
 RecipeApplicationService::ListPublishedRecipes() {
@@ -40,6 +43,15 @@ RecipeApplicationService::RecommendTonight(const Domain::RecommendationRequest& 
             RecipesResult.ErrorValue());
     }
     return Provider->Recommend(Request, RecipesResult.Value());
+}
+
+Foundation::Result<std::vector<Domain::Ingredient>>
+RecipeApplicationService::ListIngredients() {
+    if (!Ingredients) {
+        return Foundation::Result<std::vector<Domain::Ingredient>>::FromError(
+            Foundation::Error(Foundation::ErrorCode::StorageUnavailable, "食材仓储不可用"));
+    }
+    return Ingredients->ListAll();
 }
 
 }  // namespace Menu::Application

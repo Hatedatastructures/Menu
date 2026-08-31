@@ -133,8 +133,12 @@ Foundation::Result<Domain::Recipe> ReadRecipeRow(
 
     auto IngredientStatementResult = Prepare(
         Database,
-        "SELECT IngredientId, Quantity, Unit, Required, ServingFactor, Preparation "
-        "FROM RecipeIngredients WHERE RecipeId = ? ORDER BY IngredientId;");
+        "SELECT RecipeIngredients.IngredientId, RecipeIngredients.Quantity, "
+        "RecipeIngredients.Unit, RecipeIngredients.Required, RecipeIngredients.ServingFactor, "
+        "RecipeIngredients.Preparation, Ingredients.Name, Ingredients.Category, "
+        "Ingredients.DefaultUnit, Ingredients.IsPantryStaple "
+        "FROM RecipeIngredients JOIN Ingredients ON Ingredients.Id = RecipeIngredients.IngredientId "
+        "WHERE RecipeIngredients.RecipeId = ? ORDER BY RecipeIngredients.IngredientId;");
     if (!IngredientStatementResult.HasValue()) {
         return Foundation::Result<Domain::Recipe>::FromError(
             IngredientStatementResult.ErrorValue());
@@ -160,6 +164,12 @@ Foundation::Result<Domain::Recipe> ReadRecipeRow(
             sqlite3_column_int(IngredientStatement.Get(), 3) != 0,
             sqlite3_column_double(IngredientStatement.Get(), 4),
             ColumnText(IngredientStatement.Get(), 5));
+        Domain::RecipeIngredient& IngredientValue = RecipeValue.Ingredients.back();
+        IngredientValue.IngredientName = ColumnText(IngredientStatement.Get(), 6);
+        IngredientValue.IngredientCategory = ColumnText(IngredientStatement.Get(), 7);
+        IngredientValue.IngredientDefaultUnit = ColumnText(IngredientStatement.Get(), 8);
+        IngredientValue.IngredientIsPantryStaple =
+            sqlite3_column_int(IngredientStatement.Get(), 9) != 0;
     }
 
     auto StepStatementResult = Prepare(
