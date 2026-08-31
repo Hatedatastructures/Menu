@@ -1,4 +1,5 @@
 add_library(MenuApplication STATIC
+    AdminRecipeApplicationService.cpp
     RecipeApplicationService.cpp
     RuleBasedRecommendationProvider.cpp
     StorageExecutor.cpp

@@ -1,5 +1,6 @@
 add_library(MenuApi STATIC
     ApiErrors.cpp
+    AuthDtos.cpp
     ApiRouter.cpp
     RecipeDtos.cpp
 )

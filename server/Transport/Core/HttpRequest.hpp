@@ -1,5 +1,8 @@
 #pragma once
 
+#include <algorithm>
+#include <cctype>
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -20,8 +23,15 @@ struct HttpRequest {
     bool KeepAlive = true;
 
     [[nodiscard]] std::string HeaderValue(std::string_view NameValue) const {
+        const auto EqualName = [](std::string_view Left, std::string_view Right) {
+            return Left.size() == Right.size() &&
+                   std::ranges::equal(Left, Right, [](char LeftCharacter, char RightCharacter) {
+                       return std::tolower(static_cast<unsigned char>(LeftCharacter)) ==
+                              std::tolower(static_cast<unsigned char>(RightCharacter));
+                   });
+        };
         for (const HttpHeader& Header : Headers) {
-            if (Header.Name == NameValue) {
+            if (EqualName(Header.Name, NameValue)) {
                 return Header.Value;
             }
         }

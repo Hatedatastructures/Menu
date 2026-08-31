@@ -1,5 +1,7 @@
 include(FetchContent)
 
+find_package(OpenSSL REQUIRED COMPONENTS Crypto)
+
 if(NOT DEFINED FETCHCONTENT_BASE_DIR OR FETCHCONTENT_BASE_DIR STREQUAL "")
     set(FETCHCONTENT_BASE_DIR "${PROJECT_SOURCE_DIR}/.cache/cmake-fetch" CACHE PATH
         "Menu dependency source and download cache")

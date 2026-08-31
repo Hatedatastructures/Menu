@@ -4,6 +4,8 @@
 #include <Application/StorageExecutor.hpp>
 #include <Infrastructure/MigrationRunner.hpp>
 #include <Infrastructure/SeedData.hpp>
+#include <Infrastructure/SqliteAuthRepository.hpp>
+#include <Infrastructure/SqliteAuthService.hpp>
 #include <Infrastructure/SqliteIngredientRepository.hpp>
 #include <Infrastructure/SqliteRecipeRepository.hpp>
 #include <Infrastructure/SqliteDatabase.hpp>
@@ -213,7 +215,16 @@ int main(int ArgumentCount, char** Arguments) {
         std::make_unique<Menu::Application::RuleBasedRecommendationProvider>(),
         std::move(IngredientStore));
     Menu::Application::StorageExecutor StorageExecutor(2);
-    Menu::Api::ApiRouter Router(*Service, StorageExecutor);
+    auto Authentication = std::make_unique<Menu::Infrastructure::SqliteAuthService>(
+        std::make_unique<Menu::Infrastructure::SqliteAuthRepository>(*Database));
+    auto AdminService = std::make_unique<Menu::Application::AdminRecipeApplicationService>(
+        std::make_unique<Menu::Infrastructure::SqliteAdminRecipeRepository>(*Database));
+    Menu::Api::ApiRouter Router(
+        *Service,
+        StorageExecutor,
+        Authentication.get(),
+        AdminService.get(),
+        Settings.CorsOrigins);
 
     boost::asio::io_context IoContext;
     Menu::Transport::HttpServer Server(IoContext, Settings.Http);

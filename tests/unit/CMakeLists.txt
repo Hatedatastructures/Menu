@@ -62,3 +62,16 @@ gtest_discover_tests(MenuApplicationTests
     DISCOVERY_MODE PRE_TEST
     PROPERTIES TIMEOUT 30
 )
+
+add_executable(MenuAuthTests
+    "${PROJECT_SOURCE_DIR}/tests/TestMain.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/unit/PasswordHasherTest.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/unit/TokenServiceTest.cpp"
+)
+target_include_directories(MenuAuthTests PRIVATE "${PROJECT_SOURCE_DIR}/server")
+target_link_libraries(MenuAuthTests PRIVATE GTest::gtest MenuInfrastructure)
+target_compile_features(MenuAuthTests PRIVATE cxx_std_20)
+gtest_discover_tests(MenuAuthTests
+    DISCOVERY_MODE PRE_TEST
+    PROPERTIES TIMEOUT 30
+)

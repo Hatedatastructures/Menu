@@ -1,11 +1,15 @@
 #include <gtest/gtest.h>
 
 #include <Api/ApiRouter.hpp>
+#include <Application/AdminRecipeApplicationService.hpp>
 #include <Application/RecipeApplicationService.hpp>
 #include <Application/RuleBasedRecommendationProvider.hpp>
 #include <Application/StorageExecutor.hpp>
 #include <Infrastructure/MigrationRunner.hpp>
 #include <Infrastructure/SeedData.hpp>
+#include <Infrastructure/SqliteAuthRepository.hpp>
+#include <Infrastructure/SqliteAuthService.hpp>
+#include <Infrastructure/SqliteAdminRecipeRepository.hpp>
 #include <Infrastructure/SqliteIngredientRepository.hpp>
 #include <Infrastructure/SqliteRecipeRepository.hpp>
 #include <TestFixtures/DatabaseFixtures.hpp>
@@ -40,8 +44,13 @@ protected:
             std::move(Repository),
             std::make_unique<Menu::Application::RuleBasedRecommendationProvider>(),
             std::move(IngredientStore));
+        AuthService = std::make_unique<Menu::Infrastructure::SqliteAuthService>(
+            std::make_unique<Menu::Infrastructure::SqliteAuthRepository>(*Database));
+        AdminService = std::make_unique<Menu::Application::AdminRecipeApplicationService>(
+            std::make_unique<Menu::Infrastructure::SqliteAdminRecipeRepository>(*Database));
         Storage = std::make_unique<Menu::Application::StorageExecutor>(2);
-        Router = std::make_unique<Menu::Api::ApiRouter>(*Service, *Storage);
+        Router = std::make_unique<Menu::Api::ApiRouter>(
+            *Service, *Storage, AuthService.get(), AdminService.get());
         Router->SetReady(true);
 
         Menu::Transport::HttpServerOptions Options;
@@ -77,13 +86,21 @@ protected:
     [[nodiscard]] boost::beast::http::response<boost::beast::http::string_body> Request(
         boost::beast::http::verb Method,
         std::string_view Target,
-        std::string Body = {}) const {
+        std::string Body = {},
+        std::string Origin = {},
+        std::string Authorization = {}) const {
         boost::asio::io_context ClientContext;
         boost::asio::ip::tcp::socket Socket(ClientContext);
         Socket.connect({boost::asio::ip::make_address("127.0.0.1"), Server->LocalPort()});
         boost::beast::http::request<boost::beast::http::string_body> RequestValue(
             Method, Target, 11);
         RequestValue.set(boost::beast::http::field::host, "localhost");
+        if (!Origin.empty()) {
+            RequestValue.set(boost::beast::http::field::origin, Origin);
+        }
+        if (!Authorization.empty()) {
+            RequestValue.set(boost::beast::http::field::authorization, Authorization);
+        }
         if (!Body.empty()) {
             RequestValue.set(boost::beast::http::field::content_type, "application/json");
             RequestValue.body() = std::move(Body);
@@ -110,6 +127,8 @@ protected:
     std::unique_ptr<Menu::Infrastructure::SqliteRecipeRepository> Repository;
     std::unique_ptr<Menu::Infrastructure::SqliteIngredientRepository> IngredientStore;
     std::unique_ptr<Menu::Application::RecipeApplicationService> Service;
+    std::unique_ptr<Menu::Infrastructure::SqliteAuthService> AuthService;
+    std::unique_ptr<Menu::Application::AdminRecipeApplicationService> AdminService;
     std::unique_ptr<Menu::Application::StorageExecutor> Storage;
     std::unique_ptr<Menu::Api::ApiRouter> Router;
     std::unique_ptr<Menu::Transport::HttpServer> Server;
@@ -201,4 +220,196 @@ TEST_F(ApiTestFixture, ReturnsAtMostThreeTonightRecommendations) {
     ASSERT_LE(Recommendations.size(), 3U);
     ASSERT_FALSE(Recommendations.empty());
     EXPECT_TRUE(Recommendations[0].as_object().at("recipe").is_object());
+}
+
+TEST_F(ApiTestFixture, RejectsOriginOutsideConfiguredCorsAllowlist) {
+    const auto Response = Request(
+        boost::beast::http::verb::get,
+        "/healthz",
+        {},
+        "https://untrusted.example");
+
+    ASSERT_EQ(static_cast<int>(Response.result()), 403);
+    EXPECT_EQ(ParseJson(Response.body()).as_object().at("error").as_object().at("code").as_string(),
+              "cors_denied");
+}
+
+TEST_F(ApiTestFixture, RegistersLogsInAndRotatesRefreshToken) {
+    const auto Registered = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/auth/register",
+        "{\"email\":\"cook@example.com\",\"password\":\"Menu-Cook-Password-2026\","
+        "\"displayName\":\"厨房\"}");
+    ASSERT_EQ(static_cast<int>(Registered.result()), 201);
+    const auto RegisteredBody = ParseJson(Registered.body()).as_object();
+    const std::string RegisteredRefresh =
+        std::string(RegisteredBody.at("refreshToken").as_string().c_str());
+    EXPECT_FALSE(RegisteredBody.at("accessToken").as_string().empty());
+    EXPECT_TRUE(RegisteredBody.at("user").as_object().at("isAdmin").as_bool());
+
+    const auto LoggedIn = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/auth/login",
+        "{\"email\":\"cook@example.com\",\"password\":\"Menu-Cook-Password-2026\"}");
+    ASSERT_EQ(static_cast<int>(LoggedIn.result()), 200);
+    const auto LoggedInBody = ParseJson(LoggedIn.body()).as_object();
+    EXPECT_FALSE(LoggedInBody.at("accessToken").as_string().empty());
+
+    const auto Refreshed = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/auth/refresh",
+        "{\"refreshToken\":\"" + RegisteredRefresh + "\"}");
+    ASSERT_EQ(static_cast<int>(Refreshed.result()), 200);
+    const auto RefreshedBody = ParseJson(Refreshed.body()).as_object();
+    EXPECT_NE(RefreshedBody.at("refreshToken").as_string(), RegisteredRefresh);
+
+    const auto Reused = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/auth/refresh",
+        "{\"refreshToken\":\"" + RegisteredRefresh + "\"}");
+    EXPECT_EQ(static_cast<int>(Reused.result()), 401);
+}
+
+TEST_F(ApiTestFixture, RejectsInvalidLoginWithoutRevealingAccountState) {
+    const auto Response = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/auth/login",
+        "{\"email\":\"missing@example.com\",\"password\":\"Wrong-Password-2026\"}");
+
+    ASSERT_EQ(static_cast<int>(Response.result()), 401) << Response.body();
+    EXPECT_EQ(ParseJson(Response.body()).as_object().at("error").as_object().at("code").as_string(),
+              "authentication_failed");
+}
+
+TEST_F(ApiTestFixture, RejectsOversizedLoginPasswordWithUnauthorizedStatus) {
+    const auto Registered = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/auth/register",
+        "{\"email\":\"bounded@example.com\",\"password\":\"Menu-Cook-Password-2026\","
+        "\"displayName\":\"厨房\"}");
+    ASSERT_EQ(static_cast<int>(Registered.result()), 201);
+
+    const std::string LongPassword(129, 'x');
+    const auto DirectResult = AuthService->Login("bounded@example.com", LongPassword);
+    ASSERT_FALSE(DirectResult.HasValue());
+    EXPECT_EQ(DirectResult.ErrorValue().CodeValue(),
+              Menu::Foundation::ErrorCode::AuthenticationFailed);
+    const auto Response = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/auth/login",
+        "{\"email\":\"bounded@example.com\",\"password\":\"" + LongPassword + "\"}");
+
+    ASSERT_EQ(static_cast<int>(Response.result()), 401) << Response.body();
+    EXPECT_EQ(ParseJson(Response.body()).as_object().at("error").as_object().at("code").as_string(),
+              "authentication_failed");
+}
+
+TEST_F(ApiTestFixture, RejectsWhitespaceAndControlCharactersInDisplayName) {
+    const auto WhitespaceResponse = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/auth/register",
+        "{\"email\":\"blank@example.com\",\"password\":\"Menu-Cook-Password-2026\","
+        "\"displayName\":\"   \"}");
+    const auto ControlResponse = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/auth/register",
+        "{\"email\":\"control@example.com\",\"password\":\"Menu-Cook-Password-2026\","
+        "\"displayName\":\"\\u0001\"}");
+
+    EXPECT_EQ(static_cast<int>(WhitespaceResponse.result()), 400);
+    EXPECT_EQ(static_cast<int>(ControlResponse.result()), 400);
+}
+
+TEST_F(ApiTestFixture, AdminCanCreatePublishAndDeleteRecipeWithAccessToken) {
+    const auto Registered = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/auth/register",
+        "{\"email\":\"admin-crud@example.com\",\"password\":\"Menu-Cook-Password-2026\","
+        "\"displayName\":\"管理员\"}");
+    ASSERT_EQ(static_cast<int>(Registered.result()), 201);
+    const auto RegisteredBody = ParseJson(Registered.body()).as_object();
+    const std::string AccessToken =
+        std::string(RegisteredBody.at("accessToken").as_string().c_str());
+    const std::string Authorization = "Bearer " + AccessToken;
+    const std::string RecipeBody =
+        "{\"id\":\"recipe.admin-test\",\"slug\":\"admin-test\","
+        "\"name\":\"管理员测试菜\",\"cuisine\":\"中餐\","
+        "\"description\":\"用于管理流程测试\",\"prepMinutes\":5,"
+        "\"cookMinutes\":10,\"servings\":2,\"difficulty\":1,"
+        "\"imagePath\":\"assets/media/admin-test.png\",\"status\":\"draft\","
+        "\"allergens\":[],\"cookware\":[\"炒锅\"],\"ingredients\":[{"
+        "\"ingredientId\":\"ingredient.rice\",\"quantity\":200,\"unit\":\"g\","
+        "\"required\":true,\"servingFactor\":1,\"preparation\":\"\"}],"
+        "\"steps\":[{\"stepOrder\":1,\"title\":\"准备\","
+        "\"instruction\":\"准备米饭\",\"durationSeconds\":60,\"hasTimer\":false}]}";
+    const auto Created = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/admin/recipes",
+        RecipeBody,
+        {},
+        Authorization);
+    ASSERT_EQ(static_cast<int>(Created.result()), 201);
+
+    const auto AdminList = Request(
+        boost::beast::http::verb::get,
+        "/api/v1/admin/recipes",
+        {},
+        {},
+        Authorization);
+    ASSERT_EQ(static_cast<int>(AdminList.result()), 200);
+    EXPECT_TRUE(AdminList.body().find("recipe.admin-test") != std::string::npos);
+
+    std::string PublishedBody = RecipeBody;
+    const std::string DraftStatus = "\"status\":\"draft\"";
+    const auto DraftPosition = PublishedBody.find(DraftStatus);
+    ASSERT_NE(DraftPosition, std::string::npos);
+    PublishedBody.replace(
+        DraftPosition, DraftStatus.size(), "\"status\":\"published\"");
+    const auto Updated = Request(
+        boost::beast::http::verb::patch,
+        "/api/v1/admin/recipes/recipe.admin-test",
+        PublishedBody,
+        {},
+        Authorization);
+    ASSERT_EQ(static_cast<int>(Updated.result()), 200);
+    EXPECT_EQ(ParseJson(Updated.body()).as_object().at("status").as_string(), "published");
+
+    const auto Deleted = Request(
+        boost::beast::http::verb::delete_,
+        "/api/v1/admin/recipes/recipe.admin-test",
+        {},
+        {},
+        Authorization);
+    EXPECT_EQ(static_cast<int>(Deleted.result()), 204);
+}
+
+TEST_F(ApiTestFixture, ProtectsAdminRecipesFromMissingAndNonAdminCredentials) {
+    const auto AdminRegistered = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/auth/register",
+        "{\"email\":\"owner@example.com\",\"password\":\"Menu-Cook-Password-2026\","
+        "\"displayName\":\"管理员\"}");
+    ASSERT_EQ(static_cast<int>(AdminRegistered.result()), 201);
+    const auto UserRegistered = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/auth/register",
+        "{\"email\":\"member@example.com\",\"password\":\"Menu-Cook-Password-2026\","
+        "\"displayName\":\"成员\"}");
+    ASSERT_EQ(static_cast<int>(UserRegistered.result()), 201);
+    const auto UserBody = ParseJson(UserRegistered.body()).as_object();
+    const std::string UserAuthorization =
+        "Bearer " + std::string(UserBody.at("accessToken").as_string().c_str());
+
+    const auto Missing = Request(
+        boost::beast::http::verb::get,
+        "/api/v1/admin/recipes");
+    const auto NonAdmin = Request(
+        boost::beast::http::verb::get,
+        "/api/v1/admin/recipes",
+        {},
+        {},
+        UserAuthorization);
+
+    EXPECT_EQ(static_cast<int>(Missing.result()), 401);
+    EXPECT_EQ(static_cast<int>(NonAdmin.result()), 403);
 }

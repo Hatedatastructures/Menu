@@ -1,8 +1,10 @@
 #include "Infrastructure/SqliteRecipeRepository.hpp"
 
+#include <boost/json/array.hpp>
 #include <boost/json/parse.hpp>
 #include <boost/json/serialize.hpp>
 
+#include <array>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -99,6 +101,241 @@ Foundation::Result<void> BindText(sqlite3_stmt* Statement, int Index, std::strin
     if (sqlite3_bind_text(Statement, Index, Text.c_str(), -1, SQLITE_TRANSIENT) != SQLITE_OK) {
         return Foundation::Result<void>::FromError(
             Foundation::Error(Foundation::ErrorCode::StorageUnavailable, "SQLite 绑定失败"));
+    }
+    return Foundation::Result<void>();
+}
+
+Foundation::Result<void> BindInteger(sqlite3_stmt* Statement, int Index, int Value) {
+    if (sqlite3_bind_int(Statement, Index, Value) != SQLITE_OK) {
+        return Foundation::Result<void>::FromError(
+            Foundation::Error(Foundation::ErrorCode::StorageUnavailable, "SQLite 绑定失败"));
+    }
+    return Foundation::Result<void>();
+}
+
+Foundation::Result<void> BindDouble(sqlite3_stmt* Statement, int Index, double Value) {
+    if (sqlite3_bind_double(Statement, Index, Value) != SQLITE_OK) {
+        return Foundation::Result<void>::FromError(
+            Foundation::Error(Foundation::ErrorCode::StorageUnavailable, "SQLite 绑定失败"));
+    }
+    return Foundation::Result<void>();
+}
+
+std::string SerializeStrings(const std::vector<std::string>& Values) {
+    boost::json::array Array;
+    for (const std::string& Value : Values) {
+        Array.emplace_back(Value);
+    }
+    return boost::json::serialize(Array);
+}
+
+Foundation::Result<void> StepDone(SqliteDatabase& Database, sqlite3_stmt* Statement) {
+    if (sqlite3_step(Statement) != SQLITE_DONE) {
+        return Foundation::Result<void>::FromError(StorageError(Database.NativeHandle()));
+    }
+    return Foundation::Result<void>();
+}
+
+Foundation::Result<void> InsertIngredientRows(
+    SqliteDatabase& Database,
+    const Domain::Recipe& RecipeValue) {
+    for (const Domain::RecipeIngredient& IngredientValue : RecipeValue.Ingredients) {
+        auto StatementResult = Prepare(
+            Database,
+            "INSERT INTO RecipeIngredients "
+            "(RecipeId, IngredientId, Quantity, Unit, ServingFactor, Preparation, Required) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?);");
+        if (!StatementResult.HasValue()) {
+            return Foundation::Result<void>::FromError(StatementResult.ErrorValue());
+        }
+        StatementGuard Statement = std::move(StatementResult).Value();
+        const auto RecipeBind = BindText(Statement.Get(), 1, RecipeValue.Id);
+        const auto IngredientBind = BindText(Statement.Get(), 2, IngredientValue.IngredientId);
+        const auto QuantityBind = BindDouble(Statement.Get(), 3, IngredientValue.Quantity);
+        const auto UnitBind = BindText(Statement.Get(), 4, IngredientValue.Unit);
+        const auto FactorBind = BindDouble(Statement.Get(), 5, IngredientValue.ServingFactor);
+        const auto PreparationBind = BindText(Statement.Get(), 6, IngredientValue.Preparation);
+        const auto RequiredBind = BindInteger(
+            Statement.Get(), 7, IngredientValue.Required ? 1 : 0);
+        if (!RecipeBind.HasValue() || !IngredientBind.HasValue() || !QuantityBind.HasValue() ||
+            !UnitBind.HasValue() || !FactorBind.HasValue() || !PreparationBind.HasValue() ||
+            !RequiredBind.HasValue()) {
+            const Foundation::Error ErrorValue = !RecipeBind.HasValue()
+                                                     ? RecipeBind.ErrorValue()
+                                                     : !IngredientBind.HasValue()
+                                                           ? IngredientBind.ErrorValue()
+                                                           : !QuantityBind.HasValue()
+                                                                 ? QuantityBind.ErrorValue()
+                                                                 : !UnitBind.HasValue()
+                                                                       ? UnitBind.ErrorValue()
+                                                                       : !FactorBind.HasValue()
+                                                                             ? FactorBind.ErrorValue()
+                                                                             : !PreparationBind.HasValue()
+                                                                                   ? PreparationBind.ErrorValue()
+                                                                                   : RequiredBind.ErrorValue();
+            return Foundation::Result<void>::FromError(ErrorValue);
+        }
+        const auto Result = StepDone(Database, Statement.Get());
+        if (!Result.HasValue()) {
+            return Result;
+        }
+    }
+    return Foundation::Result<void>();
+}
+
+Foundation::Result<void> InsertStepRows(
+    SqliteDatabase& Database,
+    const Domain::Recipe& RecipeValue) {
+    for (const Domain::RecipeStep& StepValue : RecipeValue.Steps) {
+        auto StatementResult = Prepare(
+            Database,
+            "INSERT INTO RecipeSteps "
+            "(RecipeId, StepOrder, Title, Instruction, DurationSeconds, HasTimer) "
+            "VALUES (?, ?, ?, ?, ?, ?);");
+        if (!StatementResult.HasValue()) {
+            return Foundation::Result<void>::FromError(StatementResult.ErrorValue());
+        }
+        StatementGuard Statement = std::move(StatementResult).Value();
+        const auto RecipeBind = BindText(Statement.Get(), 1, RecipeValue.Id);
+        const auto OrderBind = BindInteger(Statement.Get(), 2, StepValue.StepOrder);
+        const auto TitleBind = BindText(Statement.Get(), 3, StepValue.Title);
+        const auto InstructionBind = BindText(Statement.Get(), 4, StepValue.Instruction);
+        const auto DurationBind = BindInteger(Statement.Get(), 5, StepValue.DurationSeconds);
+        const auto TimerBind = BindInteger(Statement.Get(), 6, StepValue.HasTimer ? 1 : 0);
+        if (!RecipeBind.HasValue() || !OrderBind.HasValue() || !TitleBind.HasValue() ||
+            !InstructionBind.HasValue() || !DurationBind.HasValue() || !TimerBind.HasValue()) {
+            const Foundation::Error ErrorValue = !RecipeBind.HasValue()
+                                                     ? RecipeBind.ErrorValue()
+                                                     : !OrderBind.HasValue()
+                                                           ? OrderBind.ErrorValue()
+                                                           : !TitleBind.HasValue()
+                                                                 ? TitleBind.ErrorValue()
+                                                                 : !InstructionBind.HasValue()
+                                                                       ? InstructionBind.ErrorValue()
+                                                                       : !DurationBind.HasValue()
+                                                                             ? DurationBind.ErrorValue()
+                                                                             : TimerBind.ErrorValue();
+            return Foundation::Result<void>::FromError(ErrorValue);
+        }
+        const auto Result = StepDone(Database, Statement.Get());
+        if (!Result.HasValue()) {
+            return Result;
+        }
+    }
+    return Foundation::Result<void>();
+}
+
+Foundation::Result<void> DeleteRecipeChildren(
+    SqliteDatabase& Database,
+    std::string_view RecipeId) {
+    for (const char* Sql : {
+             "DELETE FROM RecipeIngredients WHERE RecipeId = ?;",
+             "DELETE FROM RecipeSteps WHERE RecipeId = ?;"}) {
+        auto StatementResult = Prepare(Database, Sql);
+        if (!StatementResult.HasValue()) {
+            return Foundation::Result<void>::FromError(StatementResult.ErrorValue());
+        }
+        StatementGuard Statement = std::move(StatementResult).Value();
+        const auto BindResult = BindText(Statement.Get(), 1, RecipeId);
+        if (!BindResult.HasValue()) {
+            return BindResult;
+        }
+        const auto Result = StepDone(Database, Statement.Get());
+        if (!Result.HasValue()) {
+            return Result;
+        }
+    }
+    return Foundation::Result<void>();
+}
+
+Foundation::Result<void> SaveRecipeBase(
+    SqliteDatabase& Database,
+    const Domain::Recipe& RecipeValue,
+    bool Update) {
+    const char* Sql = Update
+                          ? "UPDATE Recipes SET Slug = ?, Name = ?, Cuisine = ?, Description = ?, "
+                            "PrepMinutes = ?, CookMinutes = ?, Servings = ?, Difficulty = ?, "
+                            "ImagePath = ?, Status = ?, AllergensJson = ?, CookwareJson = ?, "
+                            "UpdatedAt = CURRENT_TIMESTAMP WHERE Id = ?;"
+                          : "INSERT INTO Recipes "
+                            "(Id, Slug, Name, Cuisine, Description, PrepMinutes, CookMinutes, "
+                            "Servings, Difficulty, ImagePath, Status, AllergensJson, CookwareJson) "
+                            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);";
+    auto StatementResult = Prepare(Database, Sql);
+    if (!StatementResult.HasValue()) {
+        return Foundation::Result<void>::FromError(StatementResult.ErrorValue());
+    }
+    StatementGuard Statement = std::move(StatementResult).Value();
+    int Index = 1;
+    if (!Update) {
+        const auto IdBind = BindText(Statement.Get(), Index++, RecipeValue.Id);
+        if (!IdBind.HasValue()) {
+            return IdBind;
+        }
+    }
+    const std::array<std::string_view, 5> TextValues = {
+        RecipeValue.Slug, RecipeValue.Name, RecipeValue.Cuisine,
+        RecipeValue.Description, RecipeValue.ImagePath};
+    const auto SlugBind = BindText(Statement.Get(), Index++, TextValues[0]);
+    const auto NameBind = BindText(Statement.Get(), Index++, TextValues[1]);
+    const auto CuisineBind = BindText(Statement.Get(), Index++, TextValues[2]);
+    const auto DescriptionBind = BindText(Statement.Get(), Index++, TextValues[3]);
+    if (!SlugBind.HasValue() || !NameBind.HasValue() || !CuisineBind.HasValue() ||
+        !DescriptionBind.HasValue()) {
+        const Foundation::Error ErrorValue = !SlugBind.HasValue()
+                                                 ? SlugBind.ErrorValue()
+                                                 : !NameBind.HasValue()
+                                                       ? NameBind.ErrorValue()
+                                                       : !CuisineBind.HasValue()
+                                                             ? CuisineBind.ErrorValue()
+                                                             : DescriptionBind.ErrorValue();
+        return Foundation::Result<void>::FromError(ErrorValue);
+    }
+    const auto PrepBind = BindInteger(Statement.Get(), Index++, RecipeValue.PrepMinutes);
+    const auto CookBind = BindInteger(Statement.Get(), Index++, RecipeValue.CookMinutes);
+    const auto ServingBind = BindInteger(Statement.Get(), Index++, RecipeValue.Servings);
+    const auto DifficultyBind = BindInteger(Statement.Get(), Index++, RecipeValue.Difficulty);
+    if (!PrepBind.HasValue() || !CookBind.HasValue() || !ServingBind.HasValue() ||
+        !DifficultyBind.HasValue()) {
+        const Foundation::Error ErrorValue = !PrepBind.HasValue()
+                                                 ? PrepBind.ErrorValue()
+                                                 : !CookBind.HasValue()
+                                                       ? CookBind.ErrorValue()
+                                                       : !ServingBind.HasValue()
+                                                             ? ServingBind.ErrorValue()
+                                                             : DifficultyBind.ErrorValue();
+        return Foundation::Result<void>::FromError(ErrorValue);
+    }
+    const auto ImageBind = BindText(Statement.Get(), Index++, RecipeValue.ImagePath);
+    const auto StatusBind = BindText(Statement.Get(), Index++, RecipeValue.Status);
+    const std::string AllergensJson = SerializeStrings(RecipeValue.Allergens);
+    const std::string CookwareJson = SerializeStrings(RecipeValue.Cookware);
+    const auto AllergensBind = BindText(Statement.Get(), Index++, AllergensJson);
+    const auto CookwareBind = BindText(Statement.Get(), Index++, CookwareJson);
+    if (!ImageBind.HasValue() || !StatusBind.HasValue() || !AllergensBind.HasValue() ||
+        !CookwareBind.HasValue()) {
+        const Foundation::Error ErrorValue = !ImageBind.HasValue()
+                                                 ? ImageBind.ErrorValue()
+                                                 : !StatusBind.HasValue()
+                                                       ? StatusBind.ErrorValue()
+                                                       : !AllergensBind.HasValue()
+                                                             ? AllergensBind.ErrorValue()
+                                                             : CookwareBind.ErrorValue();
+        return Foundation::Result<void>::FromError(ErrorValue);
+    }
+    if (Update) {
+        const auto IdBind = BindText(Statement.Get(), Index, RecipeValue.Id);
+        if (!IdBind.HasValue()) {
+            return IdBind;
+        }
+    }
+    const auto Result = StepDone(Database, Statement.Get());
+    if (!Result.HasValue()) {
+        return Result;
+    }
+    if (Update && sqlite3_changes(Database.NativeHandle()) != 1) {
+        return Foundation::Result<void>::FromError(
+            Foundation::Error(Foundation::ErrorCode::NotFound, "菜谱不存在"));
     }
     return Foundation::Result<void>();
 }
@@ -221,9 +458,13 @@ Foundation::Result<Domain::Recipe> ReadPublishedRecipe(
         return Foundation::Result<Domain::Recipe>::FromError(BindResult.ErrorValue());
     }
     const int StepResult = sqlite3_step(Statement.Get());
-    if (StepResult != SQLITE_ROW) {
+    if (StepResult == SQLITE_DONE) {
         return Foundation::Result<Domain::Recipe>::FromError(
             Foundation::Error(Foundation::ErrorCode::NotFound, "菜谱不存在"));
+    }
+    if (StepResult != SQLITE_ROW) {
+        return Foundation::Result<Domain::Recipe>::FromError(
+            StorageError(Database.NativeHandle()));
     }
     return ReadRecipeRow(Database, Statement.Get());
 }
@@ -272,6 +513,144 @@ SqliteRecipeRepository::FindPublishedById(std::string_view Id) {
             RecipeResult.ErrorValue());
     }
     return std::optional<Domain::Recipe>(std::move(RecipeResult).Value());
+}
+
+Foundation::Result<std::vector<Domain::Recipe>> SqliteRecipeRepository::ListAll() {
+    auto StatementResult = Prepare(
+        Database,
+        "SELECT Id, Slug, Name, Cuisine, Description, PrepMinutes, CookMinutes, Servings, "
+        "Difficulty, ImagePath, Status, AllergensJson, CookwareJson FROM Recipes "
+        "ORDER BY UpdatedAt DESC, Id;");
+    if (!StatementResult.HasValue()) {
+        return Foundation::Result<std::vector<Domain::Recipe>>::FromError(
+            StatementResult.ErrorValue());
+    }
+    StatementGuard Statement = std::move(StatementResult).Value();
+    std::vector<Domain::Recipe> Recipes;
+    while (true) {
+        const int StepResult = sqlite3_step(Statement.Get());
+        if (StepResult == SQLITE_DONE) {
+            break;
+        }
+        if (StepResult != SQLITE_ROW) {
+            return Foundation::Result<std::vector<Domain::Recipe>>::FromError(
+                StorageError(Database.NativeHandle()));
+        }
+        auto RecipeResult = ReadRecipeRow(Database, Statement.Get());
+        if (!RecipeResult.HasValue()) {
+            return Foundation::Result<std::vector<Domain::Recipe>>::FromError(
+                RecipeResult.ErrorValue());
+        }
+        Recipes.push_back(std::move(RecipeResult).Value());
+    }
+    return Recipes;
+}
+
+Foundation::Result<Domain::Recipe> SqliteRecipeRepository::Create(
+    const Domain::Recipe& RecipeValue) {
+    const auto BeginResult = Database.BeginTransaction();
+    if (!BeginResult.HasValue()) {
+        return Foundation::Result<Domain::Recipe>::FromError(BeginResult.ErrorValue());
+    }
+    const auto BaseResult = SaveRecipeBase(Database, RecipeValue, false);
+    if (!BaseResult.HasValue()) {
+        Database.Rollback();
+        if (sqlite3_errcode(Database.NativeHandle()) == SQLITE_CONSTRAINT) {
+            return Foundation::Result<Domain::Recipe>::FromError(
+                Foundation::Error(Foundation::ErrorCode::Conflict, "菜谱 ID 或 slug 已存在"));
+        }
+        return Foundation::Result<Domain::Recipe>::FromError(BaseResult.ErrorValue());
+    }
+    const auto IngredientResult = InsertIngredientRows(Database, RecipeValue);
+    if (!IngredientResult.HasValue()) {
+        Database.Rollback();
+        return Foundation::Result<Domain::Recipe>::FromError(IngredientResult.ErrorValue());
+    }
+    const auto StepResult = InsertStepRows(Database, RecipeValue);
+    if (!StepResult.HasValue()) {
+        Database.Rollback();
+        return Foundation::Result<Domain::Recipe>::FromError(StepResult.ErrorValue());
+    }
+    const auto CommitResult = Database.Commit();
+    if (!CommitResult.HasValue()) {
+        Database.Rollback();
+        return Foundation::Result<Domain::Recipe>::FromError(CommitResult.ErrorValue());
+    }
+    return RecipeValue;
+}
+
+Foundation::Result<Domain::Recipe> SqliteRecipeRepository::Update(
+    std::string_view Id,
+    const Domain::Recipe& RecipeValue) {
+    const auto BeginResult = Database.BeginTransaction();
+    if (!BeginResult.HasValue()) {
+        return Foundation::Result<Domain::Recipe>::FromError(BeginResult.ErrorValue());
+    }
+    const auto BaseResult = SaveRecipeBase(Database, RecipeValue, true);
+    if (!BaseResult.HasValue()) {
+        Database.Rollback();
+        return Foundation::Result<Domain::Recipe>::FromError(BaseResult.ErrorValue());
+    }
+    if (RecipeValue.Id != Id) {
+        Database.Rollback();
+        return Foundation::Result<Domain::Recipe>::FromError(
+            Foundation::Error(Foundation::ErrorCode::InvalidArgument, "菜谱 ID 不一致"));
+    }
+    const auto DeleteResult = DeleteRecipeChildren(Database, Id);
+    if (!DeleteResult.HasValue()) {
+        Database.Rollback();
+        return Foundation::Result<Domain::Recipe>::FromError(DeleteResult.ErrorValue());
+    }
+    const auto IngredientResult = InsertIngredientRows(Database, RecipeValue);
+    if (!IngredientResult.HasValue()) {
+        Database.Rollback();
+        return Foundation::Result<Domain::Recipe>::FromError(IngredientResult.ErrorValue());
+    }
+    const auto StepResult = InsertStepRows(Database, RecipeValue);
+    if (!StepResult.HasValue()) {
+        Database.Rollback();
+        return Foundation::Result<Domain::Recipe>::FromError(StepResult.ErrorValue());
+    }
+    const auto CommitResult = Database.Commit();
+    if (!CommitResult.HasValue()) {
+        Database.Rollback();
+        return Foundation::Result<Domain::Recipe>::FromError(CommitResult.ErrorValue());
+    }
+    return RecipeValue;
+}
+
+Foundation::Result<void> SqliteRecipeRepository::Delete(std::string_view Id) {
+    const auto BeginResult = Database.BeginTransaction();
+    if (!BeginResult.HasValue()) {
+        return BeginResult;
+    }
+    auto StatementResult = Prepare(Database, "DELETE FROM Recipes WHERE Id = ?;");
+    if (!StatementResult.HasValue()) {
+        Database.Rollback();
+        return Foundation::Result<void>::FromError(StatementResult.ErrorValue());
+    }
+    StatementGuard Statement = std::move(StatementResult).Value();
+    const auto BindResult = BindText(Statement.Get(), 1, Id);
+    if (!BindResult.HasValue()) {
+        Database.Rollback();
+        return BindResult;
+    }
+    const auto DeleteResult = StepDone(Database, Statement.Get());
+    if (!DeleteResult.HasValue()) {
+        Database.Rollback();
+        return DeleteResult;
+    }
+    if (sqlite3_changes(Database.NativeHandle()) == 0) {
+        Database.Rollback();
+        return Foundation::Result<void>::FromError(
+            Foundation::Error(Foundation::ErrorCode::NotFound, "菜谱不存在"));
+    }
+    const auto CommitResult = Database.Commit();
+    if (!CommitResult.HasValue()) {
+        Database.Rollback();
+        return CommitResult;
+    }
+    return Foundation::Result<void>();
 }
 
 }  // namespace Menu::Infrastructure

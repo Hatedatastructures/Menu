@@ -8,6 +8,9 @@ namespace Menu::Foundation {
 enum class ErrorCode {
     Unknown,
     InvalidArgument,
+    Conflict,
+    AuthenticationFailed,
+    Forbidden,
     NotFound,
     StorageUnavailable,
     TransportUnavailable,

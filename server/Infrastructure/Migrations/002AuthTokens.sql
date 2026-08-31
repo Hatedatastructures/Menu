@@ -1,0 +1,7 @@
+CREATE TABLE IF NOT EXISTS AccessTokens (
+    Id TEXT PRIMARY KEY,
+    UserId TEXT NOT NULL REFERENCES Users(Id) ON DELETE CASCADE,
+    TokenHash TEXT NOT NULL UNIQUE,
+    ExpiresAt TEXT NOT NULL,
+    RevokedAt TEXT
+);

@@ -18,7 +18,10 @@ TEST(SqliteMigrationTest, AppliesSchemaAndEnablesWalAndForeignKeys) {
     ASSERT_TRUE(MigrationCount.HasValue());
     EXPECT_EQ(JournalMode.Value(), "wal");
     EXPECT_EQ(ForeignKeys.Value(), 1);
-    EXPECT_EQ(MigrationCount.Value(), 1);
+    EXPECT_EQ(MigrationCount.Value(), 2);
+    const auto AccessTokenTable = Database.ScalarInt(
+        "SELECT COUNT(*) FROM AccessTokens;");
+    ASSERT_TRUE(AccessTokenTable.HasValue());
 }
 
 TEST(SqliteMigrationTest, IsIdempotentAndRollsBackFailedTransaction) {
@@ -29,5 +32,5 @@ TEST(SqliteMigrationTest, IsIdempotentAndRollsBackFailedTransaction) {
     const auto MigrationCount = Database.ScalarInt(
         "SELECT COUNT(*) FROM SchemaMigration;");
     ASSERT_TRUE(MigrationCount.HasValue());
-    EXPECT_EQ(MigrationCount.Value(), 1);
+    EXPECT_EQ(MigrationCount.Value(), 2);
 }

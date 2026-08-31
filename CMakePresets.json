@@ -18,6 +18,7 @@
         "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
         "CMAKE_C_COMPILER": "C:/msys64/ucrt64/bin/gcc.exe",
         "CMAKE_CXX_COMPILER": "C:/msys64/ucrt64/bin/g++.exe",
+        "OPENSSL_ROOT_DIR": "C:/msys64/ucrt64",
         "MENU_ENABLE_TESTS": "ON",
         "FETCHCONTENT_BASE_DIR": "${sourceDir}/.cache/cmake-fetch"
       }

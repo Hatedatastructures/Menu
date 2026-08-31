@@ -3,8 +3,10 @@
 #include <MigrationSql.hpp>
 
 #include <chrono>
+#include <array>
 #include <cstdint>
 #include <string>
+#include <string_view>
 
 namespace Menu::Infrastructure {
 namespace {
@@ -55,36 +57,45 @@ Foundation::Result<void> MigrationRunner::Apply(SqliteDatabase& Database) {
         return SchemaResult;
     }
 
-    const auto AppliedCount = Database.ScalarInt(
-        "SELECT COUNT(*) FROM SchemaMigration WHERE Version = 1;");
-    if (!AppliedCount.HasValue()) {
-        return Foundation::Result<void>::FromError(AppliedCount.ErrorValue());
-    }
-    if (AppliedCount.Value() != 0) {
-        return Foundation::Result<void>();
-    }
+    struct MigrationDefinition {
+        std::int64_t Version;
+        std::string_view Sql;
+    };
+    static constexpr std::array<MigrationDefinition, 2> Migrations = {{
+        {1, Generated::InitialMigrationSql},
+        {2, Generated::AuthMigrationSql},
+    }};
 
-    const auto BeginResult = Database.BeginTransaction();
-    if (!BeginResult.HasValue()) {
-        return BeginResult;
-    }
+    for (const MigrationDefinition& Migration : Migrations) {
+        const auto AppliedCount = Database.ScalarInt(
+            "SELECT COUNT(*) FROM SchemaMigration WHERE Version = " +
+            std::to_string(Migration.Version) + ";");
+        if (!AppliedCount.HasValue()) {
+            return Foundation::Result<void>::FromError(AppliedCount.ErrorValue());
+        }
+        if (AppliedCount.Value() != 0) {
+            continue;
+        }
 
-    const auto MigrationResult = Database.Execute(Generated::InitialMigrationSql);
-    if (!MigrationResult.HasValue()) {
-        Database.Rollback();
-        return MigrationResult;
-    }
-
-    const auto RecordResult = RecordMigration(Database, 1);
-    if (!RecordResult.HasValue()) {
-        Database.Rollback();
-        return RecordResult;
-    }
-
-    const auto CommitResult = Database.Commit();
-    if (!CommitResult.HasValue()) {
-        Database.Rollback();
-        return CommitResult;
+        const auto BeginResult = Database.BeginTransaction();
+        if (!BeginResult.HasValue()) {
+            return BeginResult;
+        }
+        const auto MigrationResult = Database.Execute(Migration.Sql);
+        if (!MigrationResult.HasValue()) {
+            Database.Rollback();
+            return MigrationResult;
+        }
+        const auto RecordResult = RecordMigration(Database, Migration.Version);
+        if (!RecordResult.HasValue()) {
+            Database.Rollback();
+            return RecordResult;
+        }
+        const auto CommitResult = Database.Commit();
+        if (!CommitResult.HasValue()) {
+            Database.Rollback();
+            return CommitResult;
+        }
     }
     return Foundation::Result<void>();
 }
