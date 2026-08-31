@@ -10,6 +10,7 @@ enum class ErrorCode {
     InvalidArgument,
     NotFound,
     StorageUnavailable,
+    TransportUnavailable,
     NotReady,
 };
 

@@ -408,6 +408,7 @@ git commit -m "feat: add recipe application service and storage executor"
 - Create: `server/Transport/Core/HttpRequest.hpp`
 - Create: `server/Transport/Core/HttpResponse.hpp`
 - Create: `server/Transport/Core/HttpHandler.hpp`
+- Create: `server/Transport/HttpServerOptions.hpp`
 - Create: `server/Transport/HttpServer.hpp`
 - Create: `server/Transport/HttpServer.cpp`
 - Create: `server/Transport/HttpSession.hpp`
@@ -416,15 +417,16 @@ git commit -m "feat: add recipe application service and storage executor"
 - Create: `tests/integration/CMakeLists.txt`
 
 **Interfaces:**
-- `HttpServer::Start(HttpServerOptions, HttpHandler)` asynchronously accepts TCP connections and exposes `LocalPort()`.
+- `HttpServer(io_context&, HttpServerOptions, HttpExecutorPost)` constructs the listener; `Start(HttpHandler)` asynchronously accepts TCP connections and exposes `LocalPort()`.
 - `HttpRequest` and `HttpResponse` are transport-neutral value types in `MenuTransportCore`; `HttpHandler` is an injected callable and contains no `MenuApi` include.
+- `HttpExecutorPost` is the injectable `(any_io_executor, function<void()>)` dispatcher used for response callbacks; a post failure marks the session closed and never touches socket/timer from the caller thread.
 - `HttpSession` owns a Beast request buffer, response queue, per-connection strand, read timeout and write serialization through `std::shared_ptr` lifetime.
 
-- [ ] **Step 1: Write the transport RED test**
+- [x] **Step 1: Write the transport RED test**
 
 Start a real `HttpServer` on port 0 with a handler returning `200 text/plain`, then issue an Asio TCP request and assert the response body. The test should fail to compile until the transport API exists.
 
-- [ ] **Step 2: Run the test and verify it fails for missing transport symbols**
+- [x] **Step 2: Run the test and verify it fails for missing transport symbols**
 
 ```powershell
 ctest --preset WindowsDebug -R HttpTransportTest --output-on-failure
@@ -432,17 +434,17 @@ ctest --preset WindowsDebug -R HttpTransportTest --output-on-failure
 
 Expected: compile failure naming `HttpServer` or `HttpSession`.
 
-- [ ] **Step 3: Implement accept/read/dispatch/write/close**
+- [x] **Step 3: Implement accept/read/dispatch/write/close**
 
-Use `net::ip::tcp::acceptor`, `beast::http::async_read`, `async_write`, and `net::make_strand`. Enforce a 1 MiB body limit, 8 KiB target limit, 10 second read/write timeout, HTTP/1.1 keep-alive, and explicit `Connection: close` on malformed input. Every asynchronous callback owns the session with `shared_from_this()`.
+Use `net::ip::tcp::acceptor`, `beast::http::async_read`, `async_write`, and `net::make_strand`. Enforce a 1 MiB body limit, 8 KiB target limit, 10 second read/write timeout, HTTP/1.1 keep-alive, and explicit `Connection: close` on malformed input. `Accepting` and `Closing` are atomic; every asynchronous callback owns the session with `shared_from_this()`. Response post failures use `RequestClose()` to schedule `CloseOnExecutor()`; if the executor is already stopped, only the atomic closed state changes and RAII/shared callbacks finish lifetime cleanup.
 
 `MenuTransport` must only invoke the injected `HttpHandler`; it must never include, link, or call `MenuApi`. Add `AssertMenuTargetBoundaries()` to configure and verify that `MenuTransportCore`/`MenuTransport` closures exclude `MenuApi`, that `MenuApi` links Core but not concrete `MenuTransport`, and that `MenuServer` links both.
 
-- [ ] **Step 4: Add malformed and oversized request tests**
+- [x] **Step 4: Add malformed and oversized request tests**
 
 Verify 400 for invalid parser input, 413 for a body over 1 MiB, connection close after parser error, and two pipelined requests are serialized rather than concurrently writing the socket.
 
-- [ ] **Step 5: Verify transport integration and commit**
+- [x] **Step 5: Verify transport integration and commit**
 
 ```powershell
 cmake --build --preset WindowsDebug --parallel 2
