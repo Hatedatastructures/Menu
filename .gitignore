@@ -1,0 +1,28 @@
+# Build and tool caches must stay out of version control.
+/build/
+/.cache/
+/.tools/
+/.gradle/
+/.npm-cache/
+/admin/web/node_modules/
+/client/build/
+/client/android/build/
+/server/data/*.db
+/server/data/*.db-shm
+/server/data/*.db-wal
+/server/data/*.db-journal
+
+# Local IDE and operating-system files.
+.idea/
+.vscode/
+*.user
+*.suo
+*.vcxproj.user
+Thumbs.db
+.DS_Store
+
+# Generated packaging and test output.
+/dist/
+/artifacts/
+/test-results/
+/coverage/
