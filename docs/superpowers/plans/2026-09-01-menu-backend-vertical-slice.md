@@ -341,7 +341,8 @@ git commit -m "feat: add sqlite migrations and recipe repository"
 **Interfaces:**
 - `RecipeApplicationService::ListPublishedRecipes()` and `FindPublishedRecipe(std::string_view)` are synchronous repository calls intended only for the storage executor.
 - `RecipeApplicationService::RecommendTonight(const RecommendationRequest&)` calls the provider with repository data and returns at most three recommendations.
-- `StorageExecutor::Submit(Work, Completion)` runs work on an Asio executor and posts completion to the caller executor; it owns shutdown and does not detach tasks that borrow request state.
+- `StorageExecutionResult` carries `std::exception_ptr WorkFailure` and `std::exception_ptr CompletionFailure`, with `Succeeded()` for explicit status handling.
+- `StorageExecutor::Submit(Work, Completion, any_io_executor)` runs work on an Asio executor and posts completion to the caller executor; `Submit(Work, Completion, CompletionDispatcher)` makes dispatch failures testable and reports them through `CompletionFailure`. It owns shutdown and does not detach tasks that borrow request state.
 - `Menu::Tests::ApplicationFixtures::WithSeedRecipes()` returns an application service backed by deterministic in-memory test repositories.
 
 - [x] **Step 1: Write the application RED test**
