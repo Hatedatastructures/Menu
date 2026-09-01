@@ -5,62 +5,842 @@ info:
   description: 家庭做饭执行器的版本化 HTTP API。
 servers:
   - url: http://127.0.0.1:8080
+    description: 本机开发服务
+tags:
+  - name: Health
+  - name: Auth
+  - name: Recipes
+  - name: Workflow
+  - name: Admin
 paths:
   /healthz:
     get:
+      tags: [Health]
       operationId: GetHealth
       responses:
         '200':
           description: 进程存活
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
   /readyz:
     get:
+      tags: [Health]
       operationId: GetReadiness
       responses:
         '200':
           description: 迁移和种子数据就绪
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthResponse'
         '503':
-          description: 服务未就绪
-  /api/v1/recipes:
-    get:
-      operationId: ListRecipes
+          $ref: '#/components/responses/ServiceUnavailable'
+  /api/v1/auth/register:
+    post:
+      tags: [Auth]
+      operationId: Register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: 账户创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/InvalidBody'
+        '409':
+          description: 邮箱已注册
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/auth/login:
+    post:
+      tags: [Auth]
+      operationId: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
       responses:
         '200':
-          description: 已发布菜谱列表
+          description: 登录成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/InvalidBody'
+        '401':
+          $ref: '#/components/responses/AuthenticationFailed'
+  /api/v1/auth/refresh:
+    post:
+      tags: [Auth]
+      operationId: Refresh
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RefreshRequest'
+      responses:
+        '200':
+          description: 刷新成功并轮换 refresh token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+        '400':
+          $ref: '#/components/responses/InvalidBody'
+        '401':
+          $ref: '#/components/responses/AuthenticationFailed'
+  /api/v1/recipes:
+    get:
+      tags: [Recipes]
+      operationId: ListRecipes
+      parameters:
+        - $ref: '#/components/parameters/Cuisine'
+        - $ref: '#/components/parameters/MaxMinutes'
+        - $ref: '#/components/parameters/Difficulty'
+        - $ref: '#/components/parameters/Limit'
+      responses:
+        '200':
+          description: 已发布菜谱列表，食材已带展示字段
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recipe'
+        '400':
+          $ref: '#/components/responses/InvalidQuery'
   /api/v1/recipes/{id}:
     get:
+      tags: [Recipes]
       operationId: GetRecipe
       parameters:
-        - name: id
-          in: path
-          required: true
-          schema:
-            type: string
+        - $ref: '#/components/parameters/ResourceId'
       responses:
         '200':
           description: 菜谱详情
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '400':
+          $ref: '#/components/responses/InvalidId'
         '404':
           description: 菜谱不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/ingredients:
     get:
+      tags: [Recipes]
       operationId: ListIngredients
       responses:
         '200':
           description: 可直接显示的规范化食材列表
-  /api/v1/auth/register:
-    post:
-      operationId: Register
-      responses:
-        '401':
-          description: 认证切片预留
-  /api/v1/auth/login:
-    post:
-      operationId: Login
-      responses:
-        '401':
-          description: 认证切片预留
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ingredient'
+        '400':
+          $ref: '#/components/responses/InvalidQuery'
   /api/v1/recommendations/tonight:
     post:
+      tags: [Recipes]
       operationId: RecommendTonight
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecommendationRequest'
       responses:
         '200':
           description: 最多三个确定性推荐
+          content:
+            application/json:
+              schema:
+                type: array
+                maxItems: 3
+                items:
+                  $ref: '#/components/schemas/Recommendation'
+        '400':
+          $ref: '#/components/responses/InvalidBody'
+  /api/v1/plans:
+    get:
+      tags: [Workflow]
+      operationId: ListPlans
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: from
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: to
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: 用户在日期范围内的计划
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MealPlan'
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+    post:
+      tags: [Workflow]
+      operationId: SavePlan
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MealPlanRequest'
+      responses:
+        '201':
+          description: 计划保存成功，返回合并食材
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MealPlan'
+        '400':
+          $ref: '#/components/responses/InvalidBody'
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+  /api/v1/cooking-sessions:
+    post:
+      tags: [Workflow]
+      operationId: CreateCookingSession
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [recipeId]
+              properties:
+                recipeId:
+                  type: string
+      responses:
+        '201':
+          description: 做饭会话创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CookingSession'
+        '400':
+          $ref: '#/components/responses/InvalidBody'
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+  /api/v1/cooking-sessions/{id}:
+    patch:
+      tags: [Workflow]
+      operationId: UpdateCookingSession
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CookingSessionUpdateRequest'
+      responses:
+        '200':
+          description: 做饭进度更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CookingSession'
+        '400':
+          $ref: '#/components/responses/InvalidBody'
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+        '404':
+          $ref: '#/components/responses/ResourceNotFound'
+  /api/v1/feedback:
+    post:
+      tags: [Workflow]
+      operationId: SubmitFeedback
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FeedbackRequest'
+      responses:
+        '201':
+          description: 反馈保存成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Feedback'
+        '400':
+          $ref: '#/components/responses/InvalidBody'
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+  /api/v1/admin/recipes:
+    get:
+      tags: [Admin]
+      operationId: ListAdminRecipes
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 管理员可见的全部菜谱
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Recipe'
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+        '403':
+          $ref: '#/components/responses/AdminForbidden'
+    post:
+      tags: [Admin]
+      operationId: CreateAdminRecipe
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeWriteRequest'
+      responses:
+        '201':
+          description: 菜谱创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '400':
+          $ref: '#/components/responses/InvalidBody'
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+        '403':
+          $ref: '#/components/responses/AdminForbidden'
+  /api/v1/admin/recipes/{id}:
+    patch:
+      tags: [Admin]
+      operationId: UpdateAdminRecipe
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RecipeWriteRequest'
+      responses:
+        '200':
+          description: 菜谱更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '400':
+          $ref: '#/components/responses/InvalidBody'
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+        '403':
+          $ref: '#/components/responses/AdminForbidden'
+        '404':
+          $ref: '#/components/responses/ResourceNotFound'
+    delete:
+      tags: [Admin]
+      operationId: DeleteAdminRecipe
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '204':
+          description: 菜谱删除成功
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+        '403':
+          $ref: '#/components/responses/AdminForbidden'
+        '404':
+          $ref: '#/components/responses/ResourceNotFound'
+  /api/v1/admin/ingredients:
+    get:
+      tags: [Admin]
+      operationId: ListAdminIngredients
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 管理员可编辑的规范化食材
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Ingredient'
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+        '403':
+          $ref: '#/components/responses/AdminForbidden'
+    post:
+      tags: [Admin]
+      operationId: CreateAdminIngredient
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngredientWriteRequest'
+      responses:
+        '201':
+          description: 食材创建成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ingredient'
+        '400':
+          $ref: '#/components/responses/InvalidBody'
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+        '403':
+          $ref: '#/components/responses/AdminForbidden'
+  /api/v1/admin/ingredients/{id}:
+    patch:
+      tags: [Admin]
+      operationId: UpdateAdminIngredient
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IngredientWriteRequest'
+      responses:
+        '200':
+          description: 食材更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Ingredient'
+        '400':
+          $ref: '#/components/responses/InvalidBody'
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+        '403':
+          $ref: '#/components/responses/AdminForbidden'
+        '404':
+          $ref: '#/components/responses/ResourceNotFound'
+    delete:
+      tags: [Admin]
+      operationId: DeleteAdminIngredient
+      security:
+        - BearerAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ResourceId'
+      responses:
+        '204':
+          description: 食材删除成功
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+        '403':
+          $ref: '#/components/responses/AdminForbidden'
+        '404':
+          $ref: '#/components/responses/ResourceNotFound'
+  /api/v1/admin/stats:
+    get:
+      tags: [Admin]
+      operationId: GetAdminStats
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: 基础内容统计
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminStats'
+        '401':
+          $ref: '#/components/responses/AuthenticationRequired'
+        '403':
+          $ref: '#/components/responses/AdminForbidden'
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
+  parameters:
+    ResourceId:
+      name: id
+      in: path
+      required: true
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 128
+    Cuisine:
+      name: cuisine
+      in: query
+      schema:
+        type: string
+    MaxMinutes:
+      name: maxMinutes
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 240
+    Difficulty:
+      name: difficulty
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 5
+    Limit:
+      name: limit
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 50
+  responses:
+    InvalidBody:
+      description: 请求体无效
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InvalidQuery:
+      description: 查询参数无效
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InvalidId:
+      description: 资源 ID 无效
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    AuthenticationFailed:
+      description: 认证失败
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    AuthenticationRequired:
+      description: 缺少或无效的 Bearer token
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    AdminForbidden:
+      description: 需要管理员权限
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ResourceNotFound:
+      description: 资源不存在
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    ServiceUnavailable:
+      description: 服务未就绪或存储不可用
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+  schemas:
+    HealthResponse:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok, ready, starting]
+    ErrorResponse:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message, requestId]
+          properties:
+            code:
+              type: string
+            message:
+              type: string
+            requestId:
+              type: string
+    Ingredient:
+      type: object
+      required: [id, name, aliases, category, defaultUnit, isPantryStaple]
+      properties:
+        id: {type: string}
+        name: {type: string}
+        aliases:
+          type: array
+          items: {type: string}
+        category: {type: string}
+        defaultUnit: {type: string}
+        isPantryStaple: {type: boolean}
+        substituteGroup: {type: string}
+        storeSkuMapping:
+          type: string
+          description: 预留商超 SKU 映射，首版为空
+    IngredientWriteRequest:
+      allOf:
+        - $ref: '#/components/schemas/Ingredient'
+    RecipeIngredient:
+      type: object
+      required: [ingredientId, quantity, unit, required, servingFactor, preparation,
+        ingredientName, category, defaultUnit, isPantryStaple]
+      properties:
+        ingredientId: {type: string}
+        quantity: {type: number, minimum: 0}
+        unit: {type: string}
+        required: {type: boolean}
+        servingFactor: {type: number, minimum: 0}
+        preparation: {type: string}
+        ingredientName: {type: string}
+        category: {type: string}
+        defaultUnit: {type: string}
+        isPantryStaple: {type: boolean}
+    RecipeStep:
+      type: object
+      required: [stepOrder, title, instruction, durationSeconds, hasTimer]
+      properties:
+        stepOrder: {type: integer, minimum: 1}
+        title: {type: string}
+        instruction: {type: string}
+        durationSeconds: {type: integer, minimum: 0}
+        hasTimer: {type: boolean}
+    Recipe:
+      type: object
+      required: [id, slug, name, cuisine, description, prepMinutes, cookMinutes,
+        totalMinutes, servings, difficulty, imagePath, status, allergens, cookware,
+        ingredients, steps]
+      properties:
+        id: {type: string}
+        slug: {type: string}
+        name: {type: string}
+        cuisine: {type: string}
+        description: {type: string}
+        prepMinutes: {type: integer, minimum: 0}
+        cookMinutes: {type: integer, minimum: 0}
+        totalMinutes: {type: integer, minimum: 0}
+        servings: {type: integer, minimum: 1}
+        difficulty: {type: integer, minimum: 1, maximum: 5}
+        imagePath: {type: string}
+        status: {type: string, enum: [draft, published, archived]}
+        allergens:
+          type: array
+          items: {type: string}
+        cookware:
+          type: array
+          items: {type: string}
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecipeIngredient'
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecipeStep'
+    RecipeWriteRequest:
+      allOf:
+        - $ref: '#/components/schemas/Recipe'
+    RecommendationRequest:
+      type: object
+      required: [servings, availableMinutes, cuisines, allergies, pantryIngredientIds,
+        cookware, recentRecipeIds]
+      properties:
+        servings: {type: integer, minimum: 1, maximum: 24}
+        availableMinutes: {type: integer, minimum: 1, maximum: 240}
+        cuisines:
+          type: array
+          items: {type: string}
+        allergies:
+          type: array
+          items: {type: string}
+        pantryIngredientIds:
+          type: array
+          items: {type: string}
+        cookware:
+          type: array
+          items: {type: string}
+        recentRecipeIds:
+          type: array
+          items: {type: string}
+    Recommendation:
+      type: object
+      required: [recipe, availableIngredientCount, missingIngredientCount, score]
+      properties:
+        recipe:
+          $ref: '#/components/schemas/Recipe'
+        availableIngredientCount: {type: integer, minimum: 0}
+        missingIngredientCount: {type: integer, minimum: 0}
+        score: {type: integer}
+    RegisterRequest:
+      type: object
+      required: [email, password, displayName]
+      properties:
+        email: {type: string, format: email, maxLength: 320}
+        password: {type: string, minLength: 12, maxLength: 128}
+        displayName: {type: string, minLength: 1, maxLength: 64}
+    LoginRequest:
+      type: object
+      required: [email, password]
+      properties:
+        email: {type: string, format: email, maxLength: 320}
+        password: {type: string, maxLength: 128}
+    RefreshRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken: {type: string, minLength: 1, maxLength: 512}
+    User:
+      type: object
+      required: [id, email, displayName, isAdmin]
+      properties:
+        id: {type: string}
+        email: {type: string, format: email}
+        displayName: {type: string}
+        isAdmin: {type: boolean}
+    AuthResponse:
+      type: object
+      required: [user, accessToken, refreshToken, accessTokenExpiresInSeconds]
+      properties:
+        user:
+          $ref: '#/components/schemas/User'
+        accessToken: {type: string}
+        refreshToken: {type: string}
+        accessTokenExpiresInSeconds: {type: integer, minimum: 1}
+    MealPlanRequest:
+      type: object
+      required: [planDate, items]
+      properties:
+        planDate: {type: string, format: date}
+        items:
+          type: array
+          items:
+            type: object
+            required: [recipeId, servings, sortOrder]
+            properties:
+              recipeId: {type: string}
+              servings: {type: integer, minimum: 1, maximum: 24}
+              sortOrder: {type: integer, minimum: 0}
+    MealPlanItem:
+      type: object
+      required: [id, recipeId, recipeName, imagePath, servings, sortOrder, ingredients]
+      properties:
+        id: {type: string}
+        recipeId: {type: string}
+        recipeName: {type: string}
+        imagePath: {type: string}
+        servings: {type: integer}
+        sortOrder: {type: integer}
+        ingredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecipeIngredient'
+    MealPlan:
+      type: object
+      required: [id, planDate, items, combinedIngredients]
+      properties:
+        id: {type: string}
+        planDate: {type: string, format: date}
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/MealPlanItem'
+        combinedIngredients:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecipeIngredient'
+    CookingSessionUpdateRequest:
+      type: object
+      required: [currentStepOrder, state]
+      properties:
+        currentStepOrder: {type: integer, minimum: 1}
+        state: {type: string, enum: [active, paused, completed]}
+    CookingSession:
+      type: object
+      required: [id, recipeId, currentStepOrder, state, startedAt, updatedAt]
+      properties:
+        id: {type: string}
+        recipeId: {type: string}
+        currentStepOrder: {type: integer}
+        state: {type: string}
+        startedAt: {type: string}
+        updatedAt: {type: string}
+    FeedbackRequest:
+      type: object
+      required: [recipeId, outcome, tags, comment]
+      properties:
+        recipeId: {type: string}
+        outcome: {type: string, enum: [made, skipped]}
+        tags:
+          type: array
+          items: {type: string}
+        comment: {type: string, maxLength: 1000}
+    Feedback:
+      allOf:
+        - $ref: '#/components/schemas/FeedbackRequest'
+        - type: object
+          required: [id, createdAt]
+          properties:
+            id: {type: string}
+            createdAt: {type: string}
+    AdminStats:
+      type: object
+      required: [publishedRecipes, draftRecipes, archivedRecipes, ingredientCount]
+      properties:
+        publishedRecipes: {type: integer, minimum: 0}
+        draftRecipes: {type: integer, minimum: 0}
+        archivedRecipes: {type: integer, minimum: 0}
+        ingredientCount: {type: integer, minimum: 0}

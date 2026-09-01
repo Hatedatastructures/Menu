@@ -1,0 +1,38 @@
+[  1%] Building CXX object CMakeFiles/MenuBoostJson.dir/cmake/BoostJson.cpp.obj
+[  2%] Building C object CMakeFiles/MenuSqlite.dir/.cache/sqlite/sqlite-amalgamation-3530400/sqlite3.c.obj
+[  3%] Linking CXX static library libMenuBoostJson.a
+[  3%] Built target MenuBoostJson
+[  4%] Building CXX object I:/code/Menu/.cache/cmake-fetch/googletest-build/googletest/CMakeFiles/gtest.dir/src/gtest-all.cc.obj
+[  6%] Linking C static library libMenuSqlite.a
+[  6%] Built target MenuSqlite
+[ 10%] Built target MenuDomain
+[ 14%] Built target MenuTransport
+[ 15%] Building CXX object server/Application/CMakeFiles/MenuApplication.dir/StorageExecutor.cpp.obj
+[ 16%] Linking CXX static library libMenuApplication.a
+[ 25%] Built target MenuApplication
+[ 26%] Building CXX object server/Api/CMakeFiles/MenuApi.dir/RecipeRoutes.cpp.obj
+[ 27%] Linking CXX static library I:\code\Menu\build\WindowsDebug\lib\libgtest.a
+[ 27%] Built target gtest
+[ 44%] Built target MenuInfrastructure
+[ 45%] Linking CXX executable MenuUnitTests.exe
+[ 51%] Built target MenuUnitTests
+[ 53%] Linking CXX static library libMenuApi.a
+[ 54%] Linking CXX executable MenuMigrationTests.exe
+[ 72%] Built target MenuApi
+[ 74%] Built target MenuMigrationTests
+[ 75%] Linking CXX executable MenuRecipeRepositoryTests.exe
+[ 77%] Linking CXX executable MenuApplicationTests.exe
+[ 79%] Built target MenuRecipeRepositoryTests
+[ 83%] Built target MenuApplicationTests
+[ 84%] Linking CXX executable MenuAuthTests.exe
+[ 85%] Building CXX object tests/integration/CMakeFiles/MenuTransportIntegrationTests.dir/HttpTransportTest.cpp.obj
+[ 89%] Built target MenuAuthTests
+[ 90%] Linking CXX executable MenuApiIntegrationTests.exe
+[ 92%] Built target MenuApiIntegrationTests
+[ 93%] Building CXX object I:/code/Menu/.cache/cmake-fetch/googletest-build/googletest/CMakeFiles/gtest_main.dir/src/gtest_main.cc.obj
+[ 95%] Linking CXX static library I:\code\Menu\build\WindowsDebug\lib\libgtest_main.a
+[ 95%] Built target gtest_main
+[ 96%] Linking CXX executable ..\bin\MenuServer.exe
+[ 97%] Built target MenuServer
+[ 98%] Linking CXX executable MenuTransportIntegrationTests.exe
+[100%] Built target MenuTransportIntegrationTests

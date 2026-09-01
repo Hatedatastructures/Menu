@@ -1,0 +1,32 @@
+--------- beginning of main
+09-01 10:17:40.734 I/ImeTracker( 3711): com.menu.cookflow:ce7734b8: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+09-01 10:17:40.734 D/InsetsController( 3711): hide(ime(), fromIme=false)
+09-01 10:17:40.735 I/ImeTracker( 3711): com.menu.cookflow:ce7734b8: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+09-01 10:17:42.267 I/ImeTracker( 3711): com.menu.cookflow:24e4cf71: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+09-01 10:17:42.267 D/InsetsController( 3711): show(ime(), fromIme=false)
+--------- beginning of system
+09-01 10:17:42.268 D/InsetsController( 3711): Setting requestedVisibleTypes to -1 (was -9)
+09-01 10:17:43.518 W/InteractionJankMonitor( 3711): Initializing without READ_DEVICE_CONFIG permission. enabled=true, interval=1, missedFrameThreshold=3, frameTimeThreshold=64, package=com.menu.cookflow
+09-01 10:17:43.767 I/ImeTracker( 3711): com.menu.cookflow:24e4cf71: onShown
+09-01 10:17:45.795 I/ImeTracker( 3711): com.menu.cookflow:946d08db: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+09-01 10:17:45.796 D/InsetsController( 3711): show(ime(), fromIme=false)
+09-01 10:17:45.796 I/ImeTracker( 3711): com.menu.cookflow:946d08db: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+09-01 10:17:45.797 W/RemoteInputConnectionImpl( 3711): getSurroundingText on inactive InputConnection
+09-01 10:17:45.928 I/ImeTracker( 3711): com.menu.cookflow:5d59cc7: onRequestShow at ORIGIN_CLIENT reason SHOW_SOFT_INPUT fromUser false
+09-01 10:17:45.928 D/InsetsController( 3711): show(ime(), fromIme=false)
+09-01 10:17:45.929 I/ImeTracker( 3711): com.menu.cookflow:5d59cc7: onCancelled at PHASE_CLIENT_APPLY_ANIMATION
+09-01 10:17:48.945 D/InsetsController( 3711): hide(ime(), fromIme=false)
+09-01 10:17:48.945 W/WindowOnBackDispatcher( 3711): sendCancelIfRunning: isInProgress=false callback=android.view.ImeBackAnimationController@82ec273
+09-01 10:17:48.945 D/InsetsController( 3711): Setting requestedVisibleTypes to -9 (was -1)
+09-01 10:17:48.951 D/InsetsController( 3711): hide(ime(), fromIme=false)
+09-01 10:17:48.951 I/ImeTracker( 3711): com.google.android.inputmethod.latin:70c7f7d8: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+09-01 10:17:49.222 I/ImeTracker( 3711): system_server:6836b85e: onCancelled at PHASE_CLIENT_ON_CONTROLS_CHANGED
+09-01 10:17:50.215 I/ImeTracker( 3711): com.menu.cookflow:c8a2524e: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+09-01 10:17:50.215 D/InsetsController( 3711): hide(ime(), fromIme=false)
+09-01 10:17:50.216 I/ImeTracker( 3711): com.menu.cookflow:c8a2524e: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+09-01 10:21:17.237 I/ImeTracker( 3711): com.menu.cookflow:fc1f09c3: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+09-01 10:21:17.237 D/InsetsController( 3711): hide(ime(), fromIme=false)
+09-01 10:21:17.237 I/ImeTracker( 3711): com.menu.cookflow:fc1f09c3: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+09-01 10:21:25.407 I/ImeTracker( 3711): com.menu.cookflow:61af9a18: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+09-01 10:21:25.407 D/InsetsController( 3711): hide(ime(), fromIme=false)
+09-01 10:21:25.407 I/ImeTracker( 3711): com.menu.cookflow:61af9a18: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN

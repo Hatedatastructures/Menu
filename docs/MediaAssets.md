@@ -1,0 +1,29 @@
+# Menu 位图资源
+
+这些菜品图是项目内可复现的原创占位素材，不来自外部网站、短视频或受版权保护的图片。生成程序为 `scripts/GenerateMedia.cpp`，使用 Qt `QPainter` 绘制盘子、食材、餐具和蒸汽，再输出 960x640 PNG；没有第三方授权依赖。
+
+资源全部位于 `assets/media`，文件名与种子菜谱的 `imagePath` 一致。客户端通过 Qt 资源编译进桌面/Android 包，服务端和离线缓存只保存相对路径，不依赖外链。生成后可用下面命令复核每个文件的尺寸和 SHA256：
+
+```powershell
+Get-ChildItem I:\code\Menu\assets\media\*.png | Get-FileHash -Algorithm SHA256
+```
+
+这些图用于首版可运行展示；后续替换为自有摄影时，保持相同的相对路径和 `MediaAsset` 授权元数据即可。
+
+当前生成文件校验记录：
+
+| 文件 | 大小 | SHA256 |
+| --- | ---: | --- |
+| `tomato-egg.png` | 40573 bytes | `233FC9165468D4C8B24E3DFAB3289CB1335B21F4772810651AFEC0A68CB0E48E` |
+| `soy-chicken.png` | 40343 bytes | `F06CBE9142FAB3E9A0D27BAFF46BEE9660BC8D48F57904A0BB0D75D605A291C5` |
+| `beef-onion.png` | 40968 bytes | `C6B09BA9716E2389AC8BAEBA681C75545F00CA62CF998622B6D28091D12F3965` |
+| `tofu-spinach.png` | 40017 bytes | `558CA67BE3904B2615362B26D178AA6A7B03F620612BF9EA0A7F0ACD603358DE` |
+| `pasta-tomato.png` | 41521 bytes | `1796FB46ABA851EEFE1178B572C20D571D606A0A595B66ADD5B7A1FB90A624BA` |
+| `lemon-salmon.png` | 39541 bytes | `7C5999714742691042A5361C7B033153D4C0E4C660F81AF82D2DF04CE56236CE` |
+| `cream-spinach.png` | 39675 bytes | `6B193CF7CEAE752428AED540C7BC4490EBF0331D6DB429C0A4CE014DDDAA5DA2` |
+| `oyakodon.png` | 40595 bytes | `76C7CBECEB518AEEB24662674F768D945C1EB4FC0B60271D8B910C6C2E1F0F42` |
+| `tofu-teriyaki.png` | 40025 bytes | `DE14BD474E6521305D3E32D37A44E9779A3CA91F4A44C3D5A37FB8C14E05EFF0` |
+| `ginger-beef.png` | 39084 bytes | `3B728832ED25372FCC5193FB06814B744F1A492EB935C5317A9A17B852111EDA` |
+| `tomato-rice.png` | 39624 bytes | `8D062BD5BBE8E1523376CD765CEA67C04852DABB5FB57F5E344AADC323C3BB16` |
+| `tofu-salad.png` | 40905 bytes | `2693E9BE18964A3F6954E1D52C01DE5957E16206B0E9ABF3A4A2030130D273E7` |
+| `menu-placeholder.png` | 41105 bytes | `AF97B41875F548153136FF3D419BD1EA315E54BCF134C92CE1D6A1159A1C9CAB` |

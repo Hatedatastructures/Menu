@@ -1,0 +1,14 @@
+
+> menu-admin@0.1.0 build
+> tsc -b && vite build
+
+vite v8.2.2 building client environment for production...
+transforming...
+✓ 1830 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.45 kB │ gzip:  0.30 kB
+dist/assets/index-CcXECdnJ.css   15.04 kB │ gzip:  3.96 kB
+dist/assets/index-BYDfEx8h.js   226.25 kB │ gzip: 69.66 kB
+
+✓ built in 183ms

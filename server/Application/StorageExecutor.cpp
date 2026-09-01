@@ -8,6 +8,18 @@
 
 namespace Menu::Application {
 
+namespace {
+
+struct CompletionState final {
+    explicit CompletionState(StorageExecutor::Completion CallbackValue)
+        : Callback(std::move(CallbackValue)) {}
+
+    StorageExecutor::Completion Callback;
+    std::atomic<bool> Delivered = false;
+};
+
+}  // namespace
+
 StorageExecutor::StorageExecutor(std::size_t ThreadCount)
     : WorkerPool(ThreadCount == 0U ? 1U : ThreadCount) {}
 
@@ -37,15 +49,15 @@ bool StorageExecutor::Submit(
         return false;
     }
 
-    auto CompletionState = std::make_shared<Completion>(std::move(CompletionValue));
-    auto CompletionDelivered = std::make_shared<std::atomic<bool>>(false);
-    const auto DeliverCompletion = [CompletionState, CompletionDelivered](
+    auto CompletionValueState = std::make_shared<CompletionState>(
+        std::move(CompletionValue));
+    const auto DeliverCompletion = [CompletionValueState](
                                       StorageExecutionResult Result) {
-        if (CompletionDelivered->exchange(true, std::memory_order_acq_rel)) {
+        if (CompletionValueState->Delivered.exchange(true, std::memory_order_acq_rel)) {
             return;
         }
         try {
-            (*CompletionState)(std::move(Result));
+            CompletionValueState->Callback(std::move(Result));
         } catch (...) {
         }
     };

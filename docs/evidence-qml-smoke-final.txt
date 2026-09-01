@@ -1,0 +1,10 @@
+QmlSmoke: main-entered
+QmlSmoke: api-created
+QmlSmoke: engine-created
+QmlSmoke: loading
+QmlSmoke: loaded 1
+QmlSmoke: root Main_QMLTYPE_0
+QmlSmoke: window QSize(430, 860) visible= true
+QmlSmoke: window-hidden
+QmlSmoke: timer-started
+QmlSmoke: timer-fired

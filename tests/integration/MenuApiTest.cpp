@@ -2,6 +2,10 @@
 
 #include <Api/ApiRouter.hpp>
 #include <Application/AdminRecipeApplicationService.hpp>
+#include <Application/AdminIngredientApplicationService.hpp>
+#include <Application/CookingSessionApplicationService.hpp>
+#include <Application/FeedbackApplicationService.hpp>
+#include <Application/MealPlanApplicationService.hpp>
 #include <Application/RecipeApplicationService.hpp>
 #include <Application/RuleBasedRecommendationProvider.hpp>
 #include <Application/StorageExecutor.hpp>
@@ -10,7 +14,11 @@
 #include <Infrastructure/SqliteAuthRepository.hpp>
 #include <Infrastructure/SqliteAuthService.hpp>
 #include <Infrastructure/SqliteAdminRecipeRepository.hpp>
+#include <Infrastructure/SqliteAdminIngredientRepository.hpp>
+#include <Infrastructure/SqliteCookingSessionRepository.hpp>
+#include <Infrastructure/SqliteFeedbackRepository.hpp>
 #include <Infrastructure/SqliteIngredientRepository.hpp>
+#include <Infrastructure/SqliteMealPlanRepository.hpp>
 #include <Infrastructure/SqliteRecipeRepository.hpp>
 #include <TestFixtures/DatabaseFixtures.hpp>
 #include <Transport/HttpServer.hpp>
@@ -23,6 +31,7 @@
 #include <boost/json/parse.hpp>
 
 #include <memory>
+#include <ranges>
 #include <string>
 #include <string_view>
 #include <thread>
@@ -48,9 +57,27 @@ protected:
             std::make_unique<Menu::Infrastructure::SqliteAuthRepository>(*Database));
         AdminService = std::make_unique<Menu::Application::AdminRecipeApplicationService>(
             std::make_unique<Menu::Infrastructure::SqliteAdminRecipeRepository>(*Database));
+        AdminIngredientService =
+            std::make_unique<Menu::Application::AdminIngredientApplicationService>(
+                std::make_unique<Menu::Infrastructure::SqliteAdminIngredientRepository>(*Database));
+        MealPlanService = std::make_unique<Menu::Application::MealPlanApplicationService>(
+            std::make_unique<Menu::Infrastructure::SqliteMealPlanRepository>(*Database));
+        CookingSessionService =
+            std::make_unique<Menu::Application::CookingSessionApplicationService>(
+                std::make_unique<Menu::Infrastructure::SqliteCookingSessionRepository>(*Database));
+        FeedbackService = std::make_unique<Menu::Application::FeedbackApplicationService>(
+            std::make_unique<Menu::Infrastructure::SqliteFeedbackRepository>(*Database));
         Storage = std::make_unique<Menu::Application::StorageExecutor>(2);
         Router = std::make_unique<Menu::Api::ApiRouter>(
-            *Service, *Storage, AuthService.get(), AdminService.get());
+            *Service,
+            *Storage,
+            AuthService.get(),
+            AdminService.get(),
+            std::vector<std::string>{"https://admin.menu.local"},
+            AdminIngredientService.get(),
+            MealPlanService.get(),
+            CookingSessionService.get(),
+            FeedbackService.get());
         Router->SetReady(true);
 
         Menu::Transport::HttpServerOptions Options;
@@ -79,6 +106,9 @@ protected:
             IoThread.join();
         }
         Router.reset();
+        FeedbackService.reset();
+        CookingSessionService.reset();
+        MealPlanService.reset();
         Service.reset();
         Database.reset();
     }
@@ -88,7 +118,9 @@ protected:
         std::string_view Target,
         std::string Body = {},
         std::string Origin = {},
-        std::string Authorization = {}) const {
+        std::string Authorization = {},
+        std::string RequestedMethod = {},
+        std::string RequestedHeaders = {}) const {
         boost::asio::io_context ClientContext;
         boost::asio::ip::tcp::socket Socket(ClientContext);
         Socket.connect({boost::asio::ip::make_address("127.0.0.1"), Server->LocalPort()});
@@ -100,6 +132,12 @@ protected:
         }
         if (!Authorization.empty()) {
             RequestValue.set(boost::beast::http::field::authorization, Authorization);
+        }
+        if (!RequestedMethod.empty()) {
+            RequestValue.set("Access-Control-Request-Method", RequestedMethod);
+        }
+        if (!RequestedHeaders.empty()) {
+            RequestValue.set("Access-Control-Request-Headers", RequestedHeaders);
         }
         if (!Body.empty()) {
             RequestValue.set(boost::beast::http::field::content_type, "application/json");
@@ -129,6 +167,10 @@ protected:
     std::unique_ptr<Menu::Application::RecipeApplicationService> Service;
     std::unique_ptr<Menu::Infrastructure::SqliteAuthService> AuthService;
     std::unique_ptr<Menu::Application::AdminRecipeApplicationService> AdminService;
+    std::unique_ptr<Menu::Application::AdminIngredientApplicationService> AdminIngredientService;
+    std::unique_ptr<Menu::Application::MealPlanApplicationService> MealPlanService;
+    std::unique_ptr<Menu::Application::CookingSessionApplicationService> CookingSessionService;
+    std::unique_ptr<Menu::Application::FeedbackApplicationService> FeedbackService;
     std::unique_ptr<Menu::Application::StorageExecutor> Storage;
     std::unique_ptr<Menu::Api::ApiRouter> Router;
     std::unique_ptr<Menu::Transport::HttpServer> Server;
@@ -232,6 +274,24 @@ TEST_F(ApiTestFixture, RejectsOriginOutsideConfiguredCorsAllowlist) {
     ASSERT_EQ(static_cast<int>(Response.result()), 403);
     EXPECT_EQ(ParseJson(Response.body()).as_object().at("error").as_object().at("code").as_string(),
               "cors_denied");
+}
+
+TEST_F(ApiTestFixture, AllowsAdminPreflightMethodsAndAuthorizationHeader) {
+    const auto Response = Request(
+        boost::beast::http::verb::options,
+        "/api/v1/admin/recipes",
+        {},
+        "https://admin.menu.local",
+        {},
+        "PATCH",
+        "Authorization, Content-Type");
+
+    ASSERT_EQ(static_cast<int>(Response.result()), 204);
+    EXPECT_EQ(Response["Access-Control-Allow-Origin"], "https://admin.menu.local");
+    EXPECT_NE(Response["Vary"].find("Origin"), std::string::npos);
+    EXPECT_NE(Response["Access-Control-Allow-Methods"].find("PATCH"), std::string::npos);
+    EXPECT_NE(Response["Access-Control-Allow-Methods"].find("DELETE"), std::string::npos);
+    EXPECT_NE(Response["Access-Control-Allow-Headers"].find("Authorization"), std::string::npos);
 }
 
 TEST_F(ApiTestFixture, RegistersLogsInAndRotatesRefreshToken) {
@@ -412,4 +472,147 @@ TEST_F(ApiTestFixture, ProtectsAdminRecipesFromMissingAndNonAdminCredentials) {
 
     EXPECT_EQ(static_cast<int>(Missing.result()), 401);
     EXPECT_EQ(static_cast<int>(NonAdmin.result()), 403);
+}
+
+TEST_F(ApiTestFixture, AuthenticatedUserCanManagePlansSessionsAndFeedback) {
+    const auto Registered = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/auth/register",
+        "{\"email\":\"workflow@example.com\",\"password\":\"Menu-Cook-Password-2026\","
+        "\"displayName\":\"计划用户\"}");
+    ASSERT_EQ(static_cast<int>(Registered.result()), 201);
+    const auto RegisteredBody = ParseJson(Registered.body()).as_object();
+    const std::string Authorization =
+        "Bearer " + std::string(RegisteredBody.at("accessToken").as_string().c_str());
+
+    const auto Unauthorized = Request(
+        boost::beast::http::verb::get, "/api/v1/plans?from=2026-09-01&to=2026-09-07");
+    ASSERT_EQ(static_cast<int>(Unauthorized.result()), 401);
+
+    const auto CreatedPlan = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/plans",
+        "{\"planDate\":\"2026-09-01\",\"items\":["
+        "{\"recipeId\":\"recipe.tomato_egg\",\"servings\":2,\"sortOrder\":0},"
+        "{\"recipeId\":\"recipe.pasta_tomato\",\"servings\":2,\"sortOrder\":1}]}" ,
+        {},
+        Authorization);
+    ASSERT_EQ(static_cast<int>(CreatedPlan.result()), 201);
+    const auto PlanBody = ParseJson(CreatedPlan.body()).as_object();
+    EXPECT_EQ(PlanBody.at("planDate").as_string(), "2026-09-01");
+    ASSERT_TRUE(PlanBody.at("items").is_array());
+    ASSERT_EQ(PlanBody.at("items").as_array().size(), 2U);
+    const auto CombinedIngredients = PlanBody.at("combinedIngredients").as_array();
+    const auto Tomato = std::ranges::find_if(
+        CombinedIngredients,
+        [](const boost::json::value& Value) {
+            return Value.as_object().at("ingredientId").as_string() == "ingredient.tomato";
+        });
+    ASSERT_NE(Tomato, CombinedIngredients.end());
+    EXPECT_EQ(Tomato->as_object().at("ingredientName").as_string(), "番茄");
+
+    const auto Plans = Request(
+        boost::beast::http::verb::get,
+        "/api/v1/plans?from=2026-09-01&to=2026-09-07",
+        {},
+        {},
+        Authorization);
+    ASSERT_EQ(static_cast<int>(Plans.result()), 200);
+    ASSERT_EQ(ParseJson(Plans.body()).as_array().size(), 1U);
+
+    const auto Session = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/cooking-sessions",
+        "{\"recipeId\":\"recipe.tomato_egg\"}",
+        {},
+        Authorization);
+    ASSERT_EQ(static_cast<int>(Session.result()), 201);
+    const auto SessionBody = ParseJson(Session.body()).as_object();
+    const std::string SessionId = std::string(SessionBody.at("id").as_string().c_str());
+    EXPECT_EQ(SessionBody.at("state").as_string(), "active");
+
+    const auto UpdatedSession = Request(
+        boost::beast::http::verb::patch,
+        "/api/v1/cooking-sessions/" + SessionId,
+        "{\"currentStepOrder\":2,\"state\":\"paused\"}",
+        {},
+        Authorization);
+    ASSERT_EQ(static_cast<int>(UpdatedSession.result()), 200);
+    EXPECT_EQ(ParseJson(UpdatedSession.body()).as_object().at("state").as_string(), "paused");
+
+    const auto Feedback = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/feedback",
+        "{\"recipeId\":\"recipe.tomato_egg\",\"outcome\":\"made\","
+        "\"tags\":[\"下次还想做\"],\"comment\":\"咸淡合适\"}",
+        {},
+        Authorization);
+    ASSERT_EQ(static_cast<int>(Feedback.result()), 201);
+    EXPECT_EQ(ParseJson(Feedback.body()).as_object().at("outcome").as_string(), "made");
+}
+
+TEST_F(ApiTestFixture, AdminCanManageIngredientsAndReadStats) {
+    const auto Registered = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/auth/register",
+        "{\"email\":\"ingredient-admin@example.com\",\"password\":\"Menu-Cook-Password-2026\","
+        "\"displayName\":\"食材管理员\"}");
+    ASSERT_EQ(static_cast<int>(Registered.result()), 201);
+    const auto RegisteredBody = ParseJson(Registered.body()).as_object();
+    const std::string Authorization =
+        "Bearer " + std::string(RegisteredBody.at("accessToken").as_string().c_str());
+    const std::string IngredientBody =
+        "{\"id\":\"ingredient.admin_test\",\"name\":\"本地香草\","
+        "\"aliases\":[\"香草\"],\"category\":\"香料\",\"defaultUnit\":\"g\","
+        "\"isPantryStaple\":false,\"substituteGroup\":\"\",\"storeSkuMapping\":\"\"}";
+
+    const auto Created = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/admin/ingredients",
+        IngredientBody,
+        {},
+        Authorization);
+    ASSERT_EQ(static_cast<int>(Created.result()), 201);
+    EXPECT_EQ(ParseJson(Created.body()).as_object().at("name").as_string(), "本地香草");
+
+    const auto AdminList = Request(
+        boost::beast::http::verb::get,
+        "/api/v1/admin/ingredients",
+        {},
+        {},
+        Authorization);
+    ASSERT_EQ(static_cast<int>(AdminList.result()), 200);
+    EXPECT_TRUE(AdminList.body().find("ingredient.admin_test") != std::string::npos);
+
+    const std::string UpdatedBody =
+        "{\"id\":\"ingredient.admin_test\",\"name\":\"本地香草叶\","
+        "\"aliases\":[\"香草叶\"],\"category\":\"香料\",\"defaultUnit\":\"g\","
+        "\"isPantryStaple\":true,\"substituteGroup\":\"\",\"storeSkuMapping\":\"sku.future\"}";
+    const auto Updated = Request(
+        boost::beast::http::verb::patch,
+        "/api/v1/admin/ingredients/ingredient.admin_test",
+        UpdatedBody,
+        {},
+        Authorization);
+    ASSERT_EQ(static_cast<int>(Updated.result()), 200);
+    const auto UpdatedValue = ParseJson(Updated.body()).as_object();
+    EXPECT_EQ(UpdatedValue.at("name").as_string(), "本地香草叶");
+    EXPECT_TRUE(UpdatedValue.at("isPantryStaple").as_bool());
+
+    const auto Stats = Request(
+        boost::beast::http::verb::get,
+        "/api/v1/admin/stats",
+        {},
+        {},
+        Authorization);
+    ASSERT_EQ(static_cast<int>(Stats.result()), 200);
+    EXPECT_GE(ParseJson(Stats.body()).as_object().at("ingredientCount").as_int64(), 20);
+
+    const auto Deleted = Request(
+        boost::beast::http::verb::delete_,
+        "/api/v1/admin/ingredients/ingredient.admin_test",
+        {},
+        {},
+        Authorization);
+    EXPECT_EQ(static_cast<int>(Deleted.result()), 204);
 }

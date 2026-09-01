@@ -1,6 +1,6 @@
 # Menu 架构基线
 
-状态：Phase 0 已完成，生产实现从 Phase 1 开始。
+状态：Phase 0-5 已实现；当前 Windows 服务端、Qt 桌面、Android x86_64 AVD 和浏览器管理台均已完成 fresh 验证，证据与已知限制已归档。
 
 日期：2026-09-01
 
@@ -86,17 +86,25 @@ SQLite 文件位于运行目录下的 `server/data`，默认启用 WAL、busy ti
 
 首版 API 契约以 `shared/schema` 的 OpenAPI/JSON Schema 为准。每个 DTO 保留版本号或兼容演进策略，数据库用版本化迁移；基础设施可以替换为 PostgreSQL adapter 而不修改 Domain/Application 接口。
 
-## 第一条垂直切片
+## 已验证的用户闭环
 
-Phase 1-2 先交付一条真实闭环：
+当前实现已经把以下路径接到真实服务端，而不是静态数组或内部函数调用：
 
-1. 启动 `MenuServer`，运行迁移和少量人工核对的种子菜谱。
-2. 用真实 HTTP 客户端访问 `/healthz`、`/readyz`、`GET /api/v1/recipes` 和 `GET /api/v1/recipes/{id}`。
-3. 管理面板从 API 读取菜谱并完成发布状态变更。
-4. Qt Quick 桌面版读取同一 API，直接渲染“今晚”的三个方案和菜谱详情。
-5. 随后接入认证、计划、清单、做饭模式和离线缓存；每一段都有测试和真实进程验证。
+1. `MenuServer` 启动迁移、WAL 和种子数据，健康检查、菜谱、食材和推荐端点可用。
+2. Qt 客户端通过 `ClientApi` 请求今晚推荐、食材和计划；Recipe DTO 携带中文食材名称、类别、单位、常备状态和处理方式。
+3. 管理面板使用真实登录和 Bearer 认证完成菜谱/食材 CRUD、草稿发布、预览、删除确认和错误态。
+4. 客户端支持一周计划的添加/移除和合并清单、做饭模式步骤勾选/并行计时器/反馈、偏好设置和用户隔离缓存；登录后的 access token 可通过 `RefreshSession` 使用 refresh token 轮换。
+5. 网络失败时使用带 schema/version 2 的本地缓存；401/登出会清除私有模型、活动菜谱、会话和对应缓存，并阻止旧异步写入复活。
 
-这条顺序让网站和客户端都依赖真实服务端契约，而不是各自维护静态 mock 数据。
+这些功能分别由单元、API 集成、Qt/QML、真实 HTTP 和 Playwright 测试覆盖；未测量的跨平台/高刷新率项目仍在文档末尾明确列出。
+
+## 文件职责拆分
+
+- `server/Api/ApiParsing*.cpp` 按 query、通用 JSON、认证、菜谱/食材、推荐和工作流 payload 拆分；`ApiRouter.cpp` 只负责组合、CORS 和请求分派。
+- `client/cpp/ClientApi*.cpp` 按状态、缓存、请求、认证和工作流拆分；模型只做稳定 role 映射和批量转换。
+- `admin/web/src` 按登录入口、工作区、页面、编辑器、预览和基础控件拆分；`App.tsx` 不承载 CRUD 业务。
+
+拆分不是新的运行时边界：所有请求仍通过 `ClientApi`/`MenuApi`，便于在 fresh 构建中检查依赖和行为。
 
 ## 环境决策
 
@@ -104,15 +112,17 @@ Phase 1-2 先交付一条真实闭环：
 - C++ 依赖使用带 SHA256 的 CMake FetchContent 锁定；源码、构建和下载缓存通过 `I:\code\Menu\.cache`、`I:\code\Menu\build` 和 `I:\code\Menu\.tools` 管理。若后续 vcpkg 能在 I 盘可复现安装，再评估迁移，不改变 target 边界。
 - npm cache 为 `I:\code\Menu\.npm-cache`，Gradle 为 `I:\code\Menu\.gradle`，Android SDK/NDK/JDK 只允许放 `I:\code\Menu\.tools` 或 `I:\android`。
 - 代理只在下载当前进程中按需设置 `HTTP_PROXY`/`HTTPS_PROXY=http://127.0.0.1:7890`，不写入系统或用户全局配置。
-- 当前机器只有 Windows 证据；Linux 和 Android 必须在对应工具链/运行设备可用后分别验证，不能由 Windows 构建推断跨平台通过。
+- Qt Android 目标使用 `I:\code\Menu\.tools\qt-android\6.8.3\android_x86_64` 的源码构建 `android-clang` prefix；跨编译 prefix 按 Qt 设计不包含 host `androiddeployqt`，APK 由已验证的 `C:\Qt\6.8.3\mingw_64\bin\androiddeployqt.exe` 作为 `QT_HOST_PATH` 工具生成。
+- 当前证据来自 Windows 桌面、Windows 服务端和 Android x86_64 AVD；Linux、ARM Android 真机和 iOS 不能由这些结果推断通过。
 
 ## 当前风险
 
 | 风险 | 当前状态 | 处理方式 |
 | --- | --- | --- |
-| Android Qt kit、JDK、SDK、NDK、Gradle 不在 PATH | 未满足 | 安装到 I 盘，记录 URL/版本/SHA，再配置 Qt Android preset；不可用时明确报告未验证 |
+| Android Qt kit、JDK、SDK、NDK、Gradle 不在 PATH | 已满足（临时进程环境） | 所有新增工具在 I 盘；Qt target prefix 和 host deployment tool 分开记录，最终命令显式设置环境 |
 | CMake 是 4.3.0-rc1 | 可用但非稳定版 | 优先验证；若出现工具链兼容问题，在 I 盘准备稳定版并记录替换原因 |
 | Windows 没有 Ninja/MSVC | MinGW/LLVM-MinGW 可用 | 首版使用已有 MinGW 或 Qt kit 的编译器；CI 另行提供 Linux/Windows 证据 |
-| 食谱图片授权与离线包大小 | 尚未建立 | 只使用自有/合法素材；首版本地位图限制尺寸并记录来源 |
-| SQLite 写 actor 与异步请求生命周期 | 尚未实现 | 先写 actor/事务/取消测试，再接入 HTTP；禁止 detached coroutine 借用请求对象 |
-| 120Hz 证据 | 未测量 | 使用 QML Profiler/设备 profile 记录帧时间；只报告实际设备支持的 60/90/120Hz |
+| 食谱图片授权与离线包大小 | 已建立 | 使用仓库内生成位图，记录尺寸/hash/来源；不依赖外链 |
+| SQLite 写 actor 与异步请求生命周期 | 已实现并测试 | SQLite 工作投递到 storage executor，写事务串行化；异常和 completion dispatch failure 有回归测试 |
+| 120Hz 证据 | 未满足 | AVD 报告 60Hz；保留首屏 gfxinfo，不能宣称真实设备 120fps |
+| Linux/ARM/iOS 构建 | 未验证 | 需要对应工具链和设备；当前不把 Windows/Android x86_64 结果外推 |

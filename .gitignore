@@ -23,6 +23,7 @@ Thumbs.db
 
 # Generated packaging and test output.
 /dist/
+/admin/web/dist/
 /artifacts/
 /test-results/
 /coverage/

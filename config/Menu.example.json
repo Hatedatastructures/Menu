@@ -6,5 +6,8 @@
   "maxBodyBytes": 1048576,
   "maxTargetBytes": 8192,
   "timeoutSeconds": 10,
-  "corsOrigins": []
+  "corsOrigins": [
+    "http://127.0.0.1:5173",
+    "https://admin.menu.local"
+  ]
 }

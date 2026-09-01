@@ -1,0 +1,12 @@
+
+> menu-admin@0.1.0 test
+> vitest run
+
+
+ RUN  v4.1.11 I:/code/Menu/admin/web
+
+
+ Test Files  2 passed (2)
+      Tests  2 passed (2)
+   Start at  16:48:06
+   Duration  148ms (transform 53ms, setup 0ms, import 69ms, tests 5ms, environment 0ms)

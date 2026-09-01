@@ -3,6 +3,7 @@ add_executable(MenuUnitTests
     "${PROJECT_SOURCE_DIR}/tests/unit/BootstrapContractTest.cpp"
     "${PROJECT_SOURCE_DIR}/tests/unit/RecipeRulesTest.cpp"
     "${PROJECT_SOURCE_DIR}/tests/unit/RecommendationRulesTest.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/unit/PlanRulesTest.cpp"
 )
 target_include_directories(MenuUnitTests PRIVATE
     "${PROJECT_SOURCE_DIR}/server"

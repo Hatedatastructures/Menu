@@ -1,0 +1,115 @@
+--------- beginning of main
+09-01 10:12:51.431 I/m.menu.cookflow( 3711): Late-enabling -Xcheck:jni
+09-01 10:12:51.480 I/m.menu.cookflow( 3711): Using CollectorTypeCMC GC.
+09-01 10:12:51.481 W/m.menu.cookflow( 3711): Unexpected CPU variant for x86: x86_64.
+09-01 10:12:51.481 W/m.menu.cookflow( 3711): Known variants: atom, sandybridge, silvermont, goldmont, goldmont-plus, goldmont-without-sha-xsaves, tremont, kabylake, alderlake, default
+09-01 10:12:51.495 D/nativeloader( 3711): Load libframework-connectivity-tiramisu-jni.so using APEX ns com_android_tethering for caller /apex/com.android.tethering/javalib/framework-connectivity-t.jar: ok
+09-01 10:12:51.528 D/CompatChangeReporter( 3711): Compat change id reported: 242716250; UID 10226; state: ENABLED
+09-01 10:12:51.614 D/nativeloader( 3711): Configuring clns-9 for other apk /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk. target_sdk_version=34, uses_libraries=, library_path=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64:/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk!/lib/x86_64, permitted_path=/data:/mnt/expand:/data/user/0/com.menu.cookflow
+09-01 10:12:51.633 I/m.menu.cookflow( 3711): AssetManager2(0x7bbc7d25fbf8) locale list changing from [] to [en-US]
+09-01 10:12:51.670 V/GraphicsEnvironment( 3711): Currently set values for:
+09-01 10:12:51.670 V/GraphicsEnvironment( 3711):   angle_gl_driver_selection_pkgs=[]
+09-01 10:12:51.671 V/GraphicsEnvironment( 3711):   angle_gl_driver_selection_values=[]
+09-01 10:12:51.671 V/GraphicsEnvironment( 3711): com.menu.cookflow is not listed in per-application setting
+09-01 10:12:51.671 V/GraphicsEnvironment( 3711): ANGLE allowlist from config: com.dreamgames.royalmatch com.dts.freefiremax com.dxx.firenow com.gramgames.mergedragons com.ludo.king com.mojang.minecraftpe com.my.defense com.nintendo.zaka com.os.airforce com.playrix.fishdomdd.gplay io.teslatech.callbreak jp.konami.prospia net.peakgames.toonblast
+09-01 10:12:51.671 V/GraphicsEnvironment( 3711): com.menu.cookflow is not listed in ANGLE allowlist or settings, returning default
+09-01 10:12:51.672 V/GraphicsEnvironment( 3711): Neither updatable production driver nor prerelease driver is supported.
+--------- beginning of system
+09-01 10:12:51.728 I/DisplayManager( 3711): Choreographer implicitly registered for the refresh rate.
+09-01 10:12:51.747 I/m.menu.cookflow( 3711): AssetManager2(0x7bbc7d269518) locale list changing from [] to [en-US]
+09-01 10:12:51.819 E/ashmem  ( 3711): Pinning is deprecated since Android Q. Please use trim or other methods.
+09-01 10:12:51.834 D/CompatChangeReporter( 3711): Compat change id reported: 247079863; UID 10226; state: ENABLED
+09-01 10:12:51.875 I/EGL_emulation( 3711): Opening libGLESv1_CM_emulation.so
+09-01 10:12:51.875 I/EGL_emulation( 3711): Opening libGLESv2_emulation.so
+09-01 10:12:51.945 W/HWUI    ( 3711): Failed to choose config with EGL_SWAP_BEHAVIOR_PRESERVED, retrying without...
+09-01 10:12:51.945 W/HWUI    ( 3711): Failed to initialize 101010-2 format, error = EGL_SUCCESS
+09-01 10:12:51.963 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:51.976 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:51.977 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.076 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.080 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.081 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.082 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.084 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.087 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.088 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.090 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.092 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.094 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.094 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.095 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.096 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.097 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.099 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.100 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.103 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.104 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.105 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.106 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.109 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.111 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.113 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.114 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.117 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.118 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.119 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.167 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.170 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.172 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.229 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.312 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.379 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libc++_shared.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.390 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6Core_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.390 I/QtCore  ( 3711): Start
+09-01 10:12:52.399 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6Concurrent_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.420 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6Gui_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.426 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6Network_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.431 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6OpenGL_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.448 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6Qml_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.456 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QmlModels_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.460 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QmlWorkerScript_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.465 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QmlMeta_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.483 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6Quick_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.496 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QuickTemplates2_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.501 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QuickControls2_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.505 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6Sql_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.510 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6Svg_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.516 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QuickControls2Impl_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.522 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QuickControls2FusionStyleImpl_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.537 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QuickControls2Fusion_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.547 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QuickControls2MaterialStyleImpl_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.555 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QuickControls2Material_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.564 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QuickControls2ImagineStyleImpl_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.569 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QuickControls2Imagine_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.575 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QuickControls2UniversalStyleImpl_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.582 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QuickControls2Universal_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.587 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QuickControls2FluentWinUI3StyleImpl_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.590 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QuickControls2BasicStyleImpl_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.595 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QuickControls2Basic_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.606 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QuickEffects_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.616 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QuickLayouts_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.623 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QuickShapes_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.628 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6Test_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.634 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libQt6QuickTest_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.647 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libplugins_platforms_qtforandroid_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.650 I/Qt      ( 3711): qt started
+09-01 10:12:52.659 D/nativeloader( 3711): Load /data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/lib/x86_64/libMenuClient_x86_64.so using class loader ns clns-9 (caller=/data/app/~~LOuWc7x79SkahpgNwyNvQw==/com.menu.cookflow-rXuU-puddRk3mZ-UU0oBOw==/base.apk): ok
+09-01 10:12:52.712 D/DesktopModeFlags( 3711): Toggle override initialized to: OVERRIDE_UNSET
+09-01 10:12:52.720 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.723 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.730 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:52.755 W/HWUI    ( 3711): Unknown dataspace 0
+09-01 10:12:52.768 I/Choreographer( 3711): Skipped 63 frames!  The application may be doing too much work on its main thread.
+09-01 10:12:52.901 I/HWUI    ( 3711): Davey! duration=1166ms; Flags=1, FrameTimelineVsyncId=13510, IntendedVsync=372028250030, Vsync=373078249988, InputEventId=0, HandleInputStart=373079274100, AnimationStart=373079349700, PerformTraversalsStart=373079802600, DrawStart=373172171800, FrameDeadline=372044916696, FrameStartTime=373078732700, FrameInterval=16666666, WorkloadTarget=16666666, SyncQueued=373172980300, SyncStart=373178711300, IssueDrawCommandsStart=373178918500, SwapBuffers=373190335500, FrameCompleted=373200965800, DequeueBufferDuration=30100, QueueBufferDuration=610400, GpuCompleted=373200965800, SwapBuffersCompleted=373192930400, DisplayPresentTime=0, CommandSubmissionCompleted=373190335500,
+09-01 10:12:52.902 I/m.menu.cookflow( 3711): AssetManager2(0x7bbc7d26c3f8) locale list changing from [] to [en-US]
+09-01 10:12:52.903 I/m.menu.cookflow( 3711): AssetManager2(0x7bbc7d26e658) locale list changing from [] to [en-US]
+09-01 10:12:52.926 I/m.menu.cookflow( 3711): AssetManager2(0x7bbc7d26d9d8) locale list changing from [] to [en-US]
+09-01 10:12:52.938 D/InsetsController( 3711): hide(ime(), fromIme=false)
+09-01 10:12:52.938 I/ImeTracker( 3711): com.menu.cookflow:1b6d6f74: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+09-01 10:12:52.940 W/Qt A11Y ( 3711): Unable to initialize the accessibility delegate with a null layout
+09-01 10:12:53.797 W/HWUI    ( 3711): Image decoding logging dropped!
+09-01 10:12:54.089 I/ImeTracker( 3711): com.menu.cookflow:8273c349: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+09-01 10:12:54.093 D/InsetsController( 3711): hide(ime(), fromIme=false)
+09-01 10:12:54.094 I/ImeTracker( 3711): com.menu.cookflow:8273c349: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN
+09-01 10:12:54.546 I/m.menu.cookflow( 3711): Compiler allocated 5042KB to compile void android.view.ViewRootImpl.performTraversals()
+09-01 10:12:58.598 D/ProfileInstaller( 3711): Installing profile for com.menu.cookflow

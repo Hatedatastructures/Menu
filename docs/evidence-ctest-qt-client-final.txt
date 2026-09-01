@@ -1,0 +1,45 @@
+=== CTest iteration 1 (GCC13.1 runtime) ===
+Test project I:/code/Menu/build/QtDesktopGcc13Debug
+    Start 1: MenuClientModelTests
+1/4 Test #1: MenuClientModelTests .............   Passed    0.02 sec
+    Start 2: MenuClientPlanModelTests
+2/4 Test #2: MenuClientPlanModelTests .........   Passed    0.02 sec
+    Start 3: MenuClientApiTests
+3/4 Test #3: MenuClientApiTests ...............   Passed    6.29 sec
+    Start 4: MenuClientQmlTests
+4/4 Test #4: MenuClientQmlTests ...............   Passed    0.34 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Total Test time (real) =   6.67 sec
+IterationExit=0
+=== CTest iteration 2 (GCC13.1 runtime) ===
+Test project I:/code/Menu/build/QtDesktopGcc13Debug
+    Start 1: MenuClientModelTests
+1/4 Test #1: MenuClientModelTests .............   Passed    0.02 sec
+    Start 2: MenuClientPlanModelTests
+2/4 Test #2: MenuClientPlanModelTests .........   Passed    0.02 sec
+    Start 3: MenuClientApiTests
+3/4 Test #3: MenuClientApiTests ...............   Passed    6.28 sec
+    Start 4: MenuClientQmlTests
+4/4 Test #4: MenuClientQmlTests ...............   Passed    0.33 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Total Test time (real) =   6.65 sec
+IterationExit=0
+=== CTest iteration 3 (GCC13.1 runtime) ===
+Test project I:/code/Menu/build/QtDesktopGcc13Debug
+    Start 1: MenuClientModelTests
+1/4 Test #1: MenuClientModelTests .............   Passed    0.02 sec
+    Start 2: MenuClientPlanModelTests
+2/4 Test #2: MenuClientPlanModelTests .........   Passed    0.02 sec
+    Start 3: MenuClientApiTests
+3/4 Test #3: MenuClientApiTests ...............   Passed    6.30 sec
+    Start 4: MenuClientQmlTests
+4/4 Test #4: MenuClientQmlTests ...............   Passed    0.34 sec
+
+100% tests passed, 0 tests failed out of 4
+
+Total Test time (real) =   6.67 sec
+IterationExit=0

@@ -1,4 +1,5 @@
 add_library(MenuDomain STATIC
+    PlanRules.cpp
     RecipeRules.cpp
     Recommendation.cpp
 )

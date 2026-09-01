@@ -1,0 +1,1 @@
+{"Url":"http://127.0.0.1:8080","Requests":512,"Concurrency":16,"Errors":0,"ErrorRate":0,"ElapsedMilliseconds":234.32,"RequestsPerSecond":2185.09,"P50Milliseconds":6.21,"P95Milliseconds":10.05,"P99Milliseconds":17.81}

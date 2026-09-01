@@ -51,6 +51,54 @@
         "CMAKE_CXX_FLAGS": "-fsanitize=address -fno-omit-frame-pointer",
         "CMAKE_EXE_LINKER_FLAGS": "-fsanitize=address"
       }
+    },
+    {
+      "name": "QtDesktopGcc13Debug",
+      "displayName": "Qt Desktop Debug (GCC 13.1)",
+      "description": "Desktop Qt Quick client with the ABI-matched Qt MinGW 13.1 kit",
+      "generator": "MinGW Makefiles",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+        "CMAKE_CXX_EXTENSIONS": "OFF",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_C_COMPILER": "${sourceDir}/.tools/mingw1310/Tools/mingw1310_64/bin/gcc.exe",
+        "CMAKE_CXX_COMPILER": "${sourceDir}/.tools/mingw1310/Tools/mingw1310_64/bin/g++.exe",
+        "CMAKE_MAKE_PROGRAM": "C:/msys64/ucrt64/bin/mingw32-make.exe",
+        "CMAKE_PREFIX_PATH": "C:/Qt/6.8.3/mingw_64",
+        "FETCHCONTENT_BASE_DIR": "${sourceDir}/.cache/cmake-fetch",
+        "MENU_ENABLE_CLIENT": "ON",
+        "MENU_ENABLE_SERVER": "OFF",
+        "MENU_ENABLE_TESTS": "ON"
+      }
+    },
+    {
+      "name": "QtAndroidDebug",
+      "displayName": "Qt Android Debug (source-built kit)",
+      "description": "Android x86_64 debug client using the I-drive Qt 6.8.3 android-clang prefix",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/${presetName}",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Debug",
+        "CMAKE_CXX_STANDARD": "20",
+        "CMAKE_CXX_STANDARD_REQUIRED": "ON",
+        "CMAKE_CXX_EXTENSIONS": "OFF",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/.tools/android-sdk/ndk/26.1.10909125/build/cmake/android.toolchain.cmake",
+        "CMAKE_MAKE_PROGRAM": "${sourceDir}/.tools/ninja-1.13.1/ninja.exe",
+        "CMAKE_PREFIX_PATH": "${sourceDir}/.tools/qt-android/6.8.3/android_x86_64",
+        "CMAKE_FIND_ROOT_PATH": "${sourceDir}/.tools/qt-android/6.8.3/android_x86_64",
+        "ANDROID_ABI": "x86_64",
+        "ANDROID_PLATFORM": "android-28",
+        "ANDROID_SDK_ROOT": "${sourceDir}/.tools/android-sdk",
+        "ANDROID_NDK_ROOT": "${sourceDir}/.tools/android-sdk/ndk/26.1.10909125",
+        "FETCHCONTENT_BASE_DIR": "${sourceDir}/.cache/cmake-fetch",
+        "MENU_ENABLE_CLIENT": "ON",
+        "MENU_ENABLE_SERVER": "OFF",
+        "MENU_ENABLE_TESTS": "OFF"
+      }
     }
   ],
   "buildPresets": [
@@ -67,6 +115,16 @@
     {
       "name": "WindowsAsan",
       "configurePreset": "WindowsAsan",
+      "jobs": 2
+    },
+    {
+      "name": "QtDesktopGcc13Debug",
+      "configurePreset": "QtDesktopGcc13Debug",
+      "jobs": 2
+    },
+    {
+      "name": "QtAndroidDebug",
+      "configurePreset": "QtAndroidDebug",
       "jobs": 2
     }
   ],
@@ -88,6 +146,13 @@
     {
       "name": "WindowsAsan",
       "configurePreset": "WindowsAsan",
+      "output": {
+        "outputOnFailure": true
+      }
+    },
+    {
+      "name": "QtDesktopGcc13Debug",
+      "configurePreset": "QtDesktopGcc13Debug",
       "output": {
         "outputOnFailure": true
       }

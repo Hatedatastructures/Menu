@@ -1,0 +1,21 @@
+-- The C compiler identification is GNU 16.1.0
+-- The CXX compiler identification is GNU 16.1.0
+-- Detecting C compiler ABI info
+-- Detecting C compiler ABI info - done
+-- Check for working C compiler: C:/msys64/ucrt64/bin/gcc.exe - skipped
+-- Detecting C compile features
+-- Detecting C compile features - done
+-- Detecting CXX compiler ABI info
+-- Detecting CXX compiler ABI info - done
+-- Check for working CXX compiler: C:/msys64/ucrt64/bin/g++.exe - skipped
+-- Detecting CXX compile features
+-- Detecting CXX compile features - done
+-- Found OpenSSL: C:/msys64/ucrt64/lib/libcrypto.dll.a (found version "3.6.0") found components: Crypto
+-- Menu target boundary check passed
+-- MenuTransportCore closure: MenuFoundation
+-- MenuTransport closure: MenuTransportCore;MenuBoost;MenuFoundation
+-- MenuApi closure: MenuApplication;MenuTransportCore;MenuBoost;MenuBoostJson;MenuDomain;MenuFoundation
+-- MenuServer closure: MenuApi;MenuTransport;MenuInfrastructure;MenuApplication;MenuTransportCore;MenuBoost;MenuBoostJson;MenuDomain;MenuFoundation;MenuSqlite;OpenSSL::Crypto
+-- Configuring done (2.5s)
+-- Generating done (0.3s)
+-- Build files have been written to: I:/code/Menu/build/WindowsDebug

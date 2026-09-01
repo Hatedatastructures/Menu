@@ -1,0 +1,5 @@
+Success
+UninstallExit=0
+Performing Streamed Install
+Success
+InstallExit=0

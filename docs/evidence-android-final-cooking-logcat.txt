@@ -1,0 +1,4 @@
+--------- beginning of main
+09-01 10:31:37.837 I/ImeTracker( 3711): com.menu.cookflow:fa59449f: onRequestHide at ORIGIN_CLIENT reason HIDE_SOFT_INPUT fromUser false
+09-01 10:31:37.838 D/InsetsController( 3711): hide(ime(), fromIme=false)
+09-01 10:31:37.841 I/ImeTracker( 3711): com.menu.cookflow:fa59449f: onCancelled at PHASE_CLIENT_ALREADY_HIDDEN

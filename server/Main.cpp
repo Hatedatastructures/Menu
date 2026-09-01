@@ -1,11 +1,20 @@
 #include <Api/ApiRouter.hpp>
 #include <Application/RecipeApplicationService.hpp>
+#include <Application/AdminIngredientApplicationService.hpp>
 #include <Application/RuleBasedRecommendationProvider.hpp>
 #include <Application/StorageExecutor.hpp>
+#include <Application/CookingSessionApplicationService.hpp>
+#include <Application/FeedbackApplicationService.hpp>
+#include <Application/MealPlanApplicationService.hpp>
+#include <Infrastructure/SqliteCookingSessionRepository.hpp>
+#include <Infrastructure/SqliteFeedbackRepository.hpp>
+#include <Infrastructure/SqliteMealPlanRepository.hpp>
+#include <Infrastructure/SqliteAdminIngredientRepository.hpp>
 #include <Infrastructure/MigrationRunner.hpp>
 #include <Infrastructure/SeedData.hpp>
 #include <Infrastructure/SqliteAuthRepository.hpp>
 #include <Infrastructure/SqliteAuthService.hpp>
+#include <Infrastructure/SqliteAdminRecipeRepository.hpp>
 #include <Infrastructure/SqliteIngredientRepository.hpp>
 #include <Infrastructure/SqliteRecipeRepository.hpp>
 #include <Infrastructure/SqliteDatabase.hpp>
@@ -219,12 +228,26 @@ int main(int ArgumentCount, char** Arguments) {
         std::make_unique<Menu::Infrastructure::SqliteAuthRepository>(*Database));
     auto AdminService = std::make_unique<Menu::Application::AdminRecipeApplicationService>(
         std::make_unique<Menu::Infrastructure::SqliteAdminRecipeRepository>(*Database));
+    auto AdminIngredientService =
+        std::make_unique<Menu::Application::AdminIngredientApplicationService>(
+            std::make_unique<Menu::Infrastructure::SqliteAdminIngredientRepository>(*Database));
+    auto MealPlanService = std::make_unique<Menu::Application::MealPlanApplicationService>(
+        std::make_unique<Menu::Infrastructure::SqliteMealPlanRepository>(*Database));
+    auto CookingSessionService =
+        std::make_unique<Menu::Application::CookingSessionApplicationService>(
+            std::make_unique<Menu::Infrastructure::SqliteCookingSessionRepository>(*Database));
+    auto FeedbackService = std::make_unique<Menu::Application::FeedbackApplicationService>(
+        std::make_unique<Menu::Infrastructure::SqliteFeedbackRepository>(*Database));
     Menu::Api::ApiRouter Router(
         *Service,
         StorageExecutor,
         Authentication.get(),
         AdminService.get(),
-        Settings.CorsOrigins);
+        Settings.CorsOrigins,
+        AdminIngredientService.get(),
+        MealPlanService.get(),
+        CookingSessionService.get(),
+        FeedbackService.get());
 
     boost::asio::io_context IoContext;
     Menu::Transport::HttpServer Server(IoContext, Settings.Http);

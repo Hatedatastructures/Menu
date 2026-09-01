@@ -1,5 +1,9 @@
 add_library(MenuApplication STATIC
+    AdminIngredientApplicationService.cpp
     AdminRecipeApplicationService.cpp
+    CookingSessionApplicationService.cpp
+    FeedbackApplicationService.cpp
+    MealPlanApplicationService.cpp
     RecipeApplicationService.cpp
     RuleBasedRecommendationProvider.cpp
     StorageExecutor.cpp

@@ -7,6 +7,9 @@ file(GENERATE
 
 add_library(MenuInfrastructure STATIC
     SqliteDatabase.cpp
+    SqliteCookingSessionRepository.cpp
+    SqliteFeedbackRepository.cpp
+    SqliteMealPlanRepository.cpp
     MigrationRunner.cpp
     SqliteRecipeRepository.cpp
     SqliteIngredientRepository.cpp
@@ -14,6 +17,7 @@ add_library(MenuInfrastructure STATIC
     TokenService.cpp
     SqliteAuthRepository.cpp
     SqliteAuthService.cpp
+    SqliteWorkflowSupport.cpp
     SeedData.cpp
 )
 target_include_directories(MenuInfrastructure PUBLIC

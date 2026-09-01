@@ -206,7 +206,9 @@ TEST(HttpTransportTest, RejectsTargetAboveConfiguredLimit) {
 
 TEST(HttpTransportTest, SerializesKeepAlivePipelineResponses) {
     boost::asio::io_context IoContext;
-    Menu::Transport::HttpServer Server(IoContext, Menu::Transport::HttpServerOptions{});
+    Menu::Transport::HttpServerOptions Options;
+    Options.Port = 0;
+    Menu::Transport::HttpServer Server(IoContext, Options);
     ASSERT_TRUE(Server.Start(
                        [](Menu::Transport::HttpRequest Request,
                           Menu::Transport::HttpResponseCallback Complete) {

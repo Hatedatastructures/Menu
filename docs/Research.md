@@ -19,6 +19,13 @@
 | SQLite WAL | https://www.sqlite.org/wal.html | WAL 提供读写并发，但所有进程必须在同一主机；要处理 checkpoint、busy 和 WAL 文件大小，不能放网络文件系统。 |
 | Qt Android 部署 | https://doc.qt.io/qt-6/android-deploy-qt-tool.html | CMake/qmake 先生成 deployment JSON，再由 `androiddeployqt` 产出 APK；Android kit、SDK、NDK、JDK 仍需独立安装与验证。 |
 
+## 当前环境实测
+
+- Qt 6.8.3 Android target 使用官方源码 `qt-everywhere-src-6.8.3`，`android-clang`、x86_64、API 28、Clang 17.0.2，构建和 `cmake --install` 的退出码均为 0。安装 prefix 是 `I:\code\Menu\.tools\qt-android\6.8.3\android_x86_64`，已检查 `qmake.bat`、`qt-cmake.bat` 和 `Qt6Config.cmake`。
+- Qt 的 `androiddeployqt` 特性要求非 cross compile；因此 Android target prefix 不会包含该 host 工具。当前使用 Qt 6.8.3 host kit 的 `C:\Qt\6.8.3\mingw_64\bin\androiddeployqt.exe`，这也是 Qt Android CMake macros 的 `QT_HOST_PATH` 选择，并已成功生成 APK。
+- `MenuApi36` AVD 的 `androidboot.qemu.vsync=60`，不是 120Hz 设备。窗口化对照可以通过 `adb screencap` 看到完整 Qt 页面；`-no-window` headless 实例只适合作为非视觉启动测试，不能把黑帧当作产品截图。
+- Android 首屏第一次出现 `loadFromModule` 不返回、窗口化截图全黑；将 `Main.qml` 的五页 eager instantiation 改为当前页首次加载并保留实例的 `Loader` 后，Android 日志出现 `qml-loaded 1`，窗口化截图显示真实推荐、中文文案、本地位图和底部导航。
+
 ## 关键设计推导
 
 ### UI 帧预算
@@ -37,11 +44,9 @@ SQLite 的事务和 WAL 能满足本地首版，但 SQLite API 本身是同步�
 
 首版图片放在仓库 `assets/media`，不依赖外链；每个 `MediaAsset` 保存来源、授权说明、宽高和 hash。没有可用照片时使用本地生成的位图占位图，并在 `docs/Downloads.md` 和资源清单说明来源，客户端离线仍能打开。
 
-## 未验证事项
+## 仍未完成的验证
 
-- CMake 4.3.0-rc1 与目标 MinGW/Qt kit 的完整配置、编译和安装流程。
-- Android Qt kit、Android SDK/NDK、JDK、Gradle 的 I 盘安装与 APK 运行。
 - Linux 编译器、CTest 和 Linux 运行时验证。
-- 服务端真实并发压测的吞吐、p95/p99 和错误率。
-- QML Profiler/Android profile 的首屏和滚动帧时间。
-- 三种屏幕尺寸的 Playwright 截图与实际 Android 截图。
+- QML Profiler/Perfetto 的完整首屏与滚动帧时间；当前只保留桌面 smoke 和 Android gfxinfo 启动样本。
+- ARM Android 真机、120Hz 设备和 Android release 签名包。
+- 生产 TLS 证书/反向代理部署；当前本地 HTTP 验证不等于公网部署验证。

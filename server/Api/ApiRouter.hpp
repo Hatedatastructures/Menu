@@ -1,7 +1,11 @@
 #pragma once
 
 #include <Application/AdminRecipeApplicationService.hpp>
+#include <Application/AdminIngredientApplicationService.hpp>
 #include <Application/AuthService.hpp>
+#include <Application/CookingSessionApplicationService.hpp>
+#include <Application/FeedbackApplicationService.hpp>
+#include <Application/MealPlanApplicationService.hpp>
 #include <Application/RecipeApplicationService.hpp>
 #include <Application/StorageExecutor.hpp>
 #include <Transport/Core/HttpHandler.hpp>
@@ -19,7 +23,11 @@ public:
         Application::StorageExecutor& StorageValue,
         Application::AuthService* AuthenticationValue = nullptr,
         Application::AdminRecipeApplicationService* AdminServiceValue = nullptr,
-        std::vector<std::string> CorsOriginsValue = {});
+        std::vector<std::string> CorsOriginsValue = {},
+        Application::AdminIngredientApplicationService* AdminIngredientServiceValue = nullptr,
+        Application::MealPlanApplicationService* MealPlanServiceValue = nullptr,
+        Application::CookingSessionApplicationService* CookingSessionServiceValue = nullptr,
+        Application::FeedbackApplicationService* FeedbackServiceValue = nullptr);
 
     void Handle(
         Transport::HttpRequest Request,
@@ -36,6 +44,10 @@ private:
     Application::StorageExecutor& Storage;
     Application::AuthService* Authentication = nullptr;
     Application::AdminRecipeApplicationService* AdminService = nullptr;
+    Application::AdminIngredientApplicationService* AdminIngredientService = nullptr;
+    Application::MealPlanApplicationService* MealPlans = nullptr;
+    Application::CookingSessionApplicationService* CookingSessions = nullptr;
+    Application::FeedbackApplicationService* Feedbacks = nullptr;
     std::vector<std::string> CorsOrigins;
     std::atomic<bool> Ready = false;
 };

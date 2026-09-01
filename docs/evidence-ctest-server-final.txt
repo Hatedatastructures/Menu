@@ -1,0 +1,95 @@
+Test project I:/code/Menu/build/WindowsDebug
+      Start  1: PlanRulesTest.MergesRepeatedIngredientsAndPreservesDisplayFields
+ 1/45 Test  #1: PlanRulesTest.MergesRepeatedIngredientsAndPreservesDisplayFields .................   Passed    0.01 sec
+      Start  2: PlanRulesTest.KeepsDifferentUnitsSeparate
+ 2/45 Test  #2: PlanRulesTest.KeepsDifferentUnitsSeparate ........................................   Passed    0.01 sec
+      Start  3: RecommendationRulesTest.FiltersAllergiesTimeCuisineAndCookware
+ 3/45 Test  #3: RecommendationRulesTest.FiltersAllergiesTimeCuisineAndCookware ...................   Passed    0.01 sec
+      Start  4: RecommendationRulesTest.ReturnsAtMostThreeStableRecommendations
+ 4/45 Test  #4: RecommendationRulesTest.ReturnsAtMostThreeStableRecommendations ..................   Passed    0.01 sec
+      Start  5: RecipeRulesTest.ScalesRequiredAndOptionalIngredientsByServingRatio
+ 5/45 Test  #5: RecipeRulesTest.ScalesRequiredAndOptionalIngredientsByServingRatio ...............   Passed    0.01 sec
+      Start  6: RecipeRulesTest.RejectsInvalidServingCountAndDuplicateStepOrder
+ 6/45 Test  #6: RecipeRulesTest.RejectsInvalidServingCountAndDuplicateStepOrder ..................   Passed    0.01 sec
+      Start  7: RecipeRulesTest.NormalizesRegisteredIngredientAlias
+ 7/45 Test  #7: RecipeRulesTest.NormalizesRegisteredIngredientAlias ..............................   Passed    0.01 sec
+      Start  8: RecipeRulesTest.CountsRequiredIngredientsAgainstPantryIds
+ 8/45 Test  #8: RecipeRulesTest.CountsRequiredIngredientsAgainstPantryIds ........................   Passed    0.01 sec
+      Start  9: BootstrapContractTest.BuildsWithCxx20AndFoundationTarget
+ 9/45 Test  #9: BootstrapContractTest.BuildsWithCxx20AndFoundationTarget .........................   Passed    0.01 sec
+      Start 10: SqliteMigrationTest.AppliesSchemaAndEnablesWalAndForeignKeys
+10/45 Test #10: SqliteMigrationTest.AppliesSchemaAndEnablesWalAndForeignKeys .....................   Passed    0.03 sec
+      Start 11: SqliteMigrationTest.IsIdempotentAndRollsBackFailedTransaction
+11/45 Test #11: SqliteMigrationTest.IsIdempotentAndRollsBackFailedTransaction ....................   Passed    0.03 sec
+      Start 12: SqliteRecipeRepositoryTest.ReturnsPublishedRecipesAndTheirSteps
+12/45 Test #12: SqliteRecipeRepositoryTest.ReturnsPublishedRecipesAndTheirSteps ..................   Passed    0.05 sec
+      Start 13: SqliteRecipeRepositoryTest.FindsKnownRecipeAndReturnsEmptyForUnknownId
+13/45 Test #13: SqliteRecipeRepositoryTest.FindsKnownRecipeAndReturnsEmptyForUnknownId ...........   Passed    0.05 sec
+      Start 14: StorageExecutorTest.CompletesValueOwnedWorkAndRejectsAfterShutdown
+14/45 Test #14: StorageExecutorTest.CompletesValueOwnedWorkAndRejectsAfterShutdown ...............   Passed    0.01 sec
+      Start 15: StorageExecutorTest.PropagatesWorkExceptionToCompletion
+15/45 Test #15: StorageExecutorTest.PropagatesWorkExceptionToCompletion ..........................   Passed    0.01 sec
+      Start 16: StorageExecutorTest.ReportsCompletionDispatchFailureWhenExecutorIsStopped
+16/45 Test #16: StorageExecutorTest.ReportsCompletionDispatchFailureWhenExecutorIsStopped ........   Passed    0.01 sec
+      Start 17: RecipeApplicationServiceTest.ReturnsOnlyThreeRecipesThatFitUserConstraints
+17/45 Test #17: RecipeApplicationServiceTest.ReturnsOnlyThreeRecipesThatFitUserConstraints .......   Passed    0.01 sec
+      Start 18: RecipeApplicationServiceTest.ListsPublishedRecipesThroughRepositoryPort
+18/45 Test #18: RecipeApplicationServiceTest.ListsPublishedRecipesThroughRepositoryPort ..........   Passed    0.01 sec
+      Start 19: TokenServiceTest.CreatesUniqueOpaqueTokensAndDeterministicHashes
+19/45 Test #19: TokenServiceTest.CreatesUniqueOpaqueTokensAndDeterministicHashes .................   Passed    0.01 sec
+      Start 20: PasswordHasherTest.HashesAndVerifiesPasswordWithoutStoringPlaintext
+20/45 Test #20: PasswordHasherTest.HashesAndVerifiesPasswordWithoutStoringPlaintext ..............   Passed    0.10 sec
+      Start 21: PasswordHasherTest.RejectsWrongOrMalformedPasswordHash
+21/45 Test #21: PasswordHasherTest.RejectsWrongOrMalformedPasswordHash ...........................   Passed    0.10 sec
+      Start 22: PasswordHasherTest.RejectsPasswordInputAboveConfiguredLimitBeforeDerivation
+22/45 Test #22: PasswordHasherTest.RejectsPasswordInputAboveConfiguredLimitBeforeDerivation ......   Passed    0.06 sec
+      Start 23: HttpTransportTest.HandlesRealHttpRequestWithInjectedHandler
+23/45 Test #23: HttpTransportTest.HandlesRealHttpRequestWithInjectedHandler ......................   Passed    0.03 sec
+      Start 24: HttpTransportTest.StopsWhileAcceptCallbacksAndConnectionsAreConcurrent
+24/45 Test #24: HttpTransportTest.StopsWhileAcceptCallbacksAndConnectionsAreConcurrent ...........   Passed    2.05 sec
+      Start 25: HttpTransportTest.RejectsMalformedRequestAndClosesConnection
+25/45 Test #25: HttpTransportTest.RejectsMalformedRequestAndClosesConnection .....................   Passed    0.01 sec
+      Start 26: HttpTransportTest.RejectsBodyAboveConfiguredLimit
+26/45 Test #26: HttpTransportTest.RejectsBodyAboveConfiguredLimit ................................   Passed    0.01 sec
+      Start 27: HttpTransportTest.RejectsTargetAboveConfiguredLimit
+27/45 Test #27: HttpTransportTest.RejectsTargetAboveConfiguredLimit ..............................   Passed    0.02 sec
+      Start 28: HttpTransportTest.SerializesKeepAlivePipelineResponses
+28/45 Test #28: HttpTransportTest.SerializesKeepAlivePipelineResponses ...........................   Passed    0.02 sec
+      Start 29: HttpTransportTest.ReportsResponseDispatchFailureWithoutCrossThreadSocketAccess
+29/45 Test #29: HttpTransportTest.ReportsResponseDispatchFailureWithoutCrossThreadSocketAccess ...   Passed    0.01 sec
+      Start 30: ApiTestFixture.ReturnsHealthAndReadinessFromRealListener
+30/45 Test #30: ApiTestFixture.ReturnsHealthAndReadinessFromRealListener .........................   Passed    0.05 sec
+      Start 31: ApiTestFixture.ListsRecipesWithStructuredIngredientsAndSteps
+31/45 Test #31: ApiTestFixture.ListsRecipesWithStructuredIngredientsAndSteps .....................   Passed    0.04 sec
+      Start 32: ApiTestFixture.ListsIngredientsWithDisplayFields
+32/45 Test #32: ApiTestFixture.ListsIngredientsWithDisplayFields .................................   Passed    0.05 sec
+      Start 33: ApiTestFixture.ReturnsRecipeDetailsAndNotFoundError
+33/45 Test #33: ApiTestFixture.ReturnsRecipeDetailsAndNotFoundError ..............................   Passed    0.05 sec
+      Start 34: ApiTestFixture.RejectsInvalidQueryAndRecommendationBody
+34/45 Test #34: ApiTestFixture.RejectsInvalidQueryAndRecommendationBody ..........................   Passed    0.05 sec
+      Start 35: ApiTestFixture.ReturnsAtMostThreeTonightRecommendations
+35/45 Test #35: ApiTestFixture.ReturnsAtMostThreeTonightRecommendations ..........................   Passed    0.05 sec
+      Start 36: ApiTestFixture.RejectsOriginOutsideConfiguredCorsAllowlist
+36/45 Test #36: ApiTestFixture.RejectsOriginOutsideConfiguredCorsAllowlist .......................   Passed    0.05 sec
+      Start 37: ApiTestFixture.AllowsAdminPreflightMethodsAndAuthorizationHeader
+37/45 Test #37: ApiTestFixture.AllowsAdminPreflightMethodsAndAuthorizationHeader .................   Passed    0.04 sec
+      Start 38: ApiTestFixture.RegistersLogsInAndRotatesRefreshToken
+38/45 Test #38: ApiTestFixture.RegistersLogsInAndRotatesRefreshToken .............................   Passed    0.14 sec
+      Start 39: ApiTestFixture.RejectsInvalidLoginWithoutRevealingAccountState
+39/45 Test #39: ApiTestFixture.RejectsInvalidLoginWithoutRevealingAccountState ...................   Passed    0.05 sec
+      Start 40: ApiTestFixture.RejectsOversizedLoginPasswordWithUnauthorizedStatus
+40/45 Test #40: ApiTestFixture.RejectsOversizedLoginPasswordWithUnauthorizedStatus ...............   Passed    0.09 sec
+      Start 41: ApiTestFixture.RejectsWhitespaceAndControlCharactersInDisplayName
+41/45 Test #41: ApiTestFixture.RejectsWhitespaceAndControlCharactersInDisplayName ................   Passed    0.05 sec
+      Start 42: ApiTestFixture.AdminCanCreatePublishAndDeleteRecipeWithAccessToken
+42/45 Test #42: ApiTestFixture.AdminCanCreatePublishAndDeleteRecipeWithAccessToken ...............   Passed    0.09 sec
+      Start 43: ApiTestFixture.ProtectsAdminRecipesFromMissingAndNonAdminCredentials
+43/45 Test #43: ApiTestFixture.ProtectsAdminRecipesFromMissingAndNonAdminCredentials .............   Passed    0.14 sec
+      Start 44: ApiTestFixture.AuthenticatedUserCanManagePlansSessionsAndFeedback
+44/45 Test #44: ApiTestFixture.AuthenticatedUserCanManagePlansSessionsAndFeedback ................   Passed    0.10 sec
+      Start 45: ApiTestFixture.AdminCanManageIngredientsAndReadStats
+45/45 Test #45: ApiTestFixture.AdminCanManageIngredientsAndReadStats .............................   Passed    0.11 sec
+
+100% tests passed, 0 tests failed out of 45
+
+Total Test time (real) =   5.32 sec
