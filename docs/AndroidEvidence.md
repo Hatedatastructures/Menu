@@ -37,9 +37,9 @@ targetSdk: 35
 
 ## 本轮 UI 与通知回归
 
-- x86_64 AVD fresh APK：`build/QtAndroidDebug/client/android-build/build/outputs/apk/debug/android-build-debug.apk`，size `28,758,049` bytes，sha256 `1E2CB79FFA110B57FCF09E9E885871E286076DE1A7B0427FBE96444234666171`；本轮 `MenuClientApp` target 重命名、`MenuActivity`/系统栏适配和 UI 调整后卸载、全新安装、启动和在线首屏回归通过。常亮控制已接入客户端并由桌面单测覆盖，尚未用 Android `dumpsys` 单独取证。
+- x86_64 AVD fresh APK：`build/QtAndroidDebug/client/android-build/build/outputs/apk/debug/android-build-debug.apk`，size `28,758,117` bytes，sha256 `A5A0A2C8FCA5534D733B27719733180FC12332B92DE1C6B1674CB7B2AD7E1CD2`；本轮 `MenuClientApp` target 重命名、`MenuActivity`/系统栏适配和 UI 调整后卸载、全新安装、启动和在线首屏回归通过。常亮控制已接入客户端，AVD 窗口 flag 和桌面单测均已验证。
 - 当前 UI 截图：`build/QtAndroidDebug/ui-final-current.png`、`build/QtAndroidDebug/ui-final-profile-device.png`、`build/QtAndroidDebug/ui-final-profile-device-dark.png`、`build/QtAndroidDebug/ui-final-cooking.png`、`build/QtAndroidDebug/ui-live-awake-detail-new.png`；浅色主题使用深色状态栏图标、深色主题使用白色状态栏图标，服务器地址设置、刷新率、通知权限、通知设置和做饭页面均已实测。最新做饭页截图确认无时长步骤不显示 0 秒计时。
-- 最新 AVD 常亮取证：进入做饭页后 `dumpsys window windows` 的应用窗口包含 `fl=KEEP_SCREEN_ON`；退出做饭页的清理逻辑由 `ScreenAwakeController` 单测覆盖。截图 `ui-live-awake-detail-new.png`，SHA256 `F11F793159A6B2A3BB56AFABA06BBF852430F4D20B6E62566D25FD02A5F90494`。
+- 最新 AVD 常亮取证：进入做饭页后 `dumpsys window windows` 的应用窗口包含 `fl=KEEP_SCREEN_ON`，返回后该 flag 消失；退出做饭页的清理逻辑由 `ScreenAwakeController` 单测覆盖。截图 `ui-live-awake-detail-new.png`，SHA256 `F11F793159A6B2A3BB56AFABA06BBF852430F4D20B6E62566D25FD02A5F90494`。
 - `dumpsys notification` 看到 `cooking_timers`（高优先级、双震动）与 `meal_reminders`（默认优先级）两个渠道，并实际发布 `Menu 通知测试`；通知应用总开关/渠道关闭时 `PermissionGranted` 会变为 false。本轮重新打包后，x86_64 AVD 卸载/安装/启动与测试通知回归均通过，日志未出现 `AndroidRuntime`、`FATAL EXCEPTION`、`UnsatisfiedLinkError` 或 `QmlWarning`。
 
 ## 窗口化 AVD
