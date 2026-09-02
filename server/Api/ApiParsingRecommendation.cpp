@@ -34,7 +34,7 @@ Foundation::Result<Domain::RecommendationRequest> ReadRecommendationRequest(
 
     const auto Servings = ReadJsonInteger(Parsed.as_object(), "servings", 1, 24);
     const auto AvailableMinutes = ReadJsonInteger(
-        Parsed.as_object(), "availableMinutes", 0, 24 * 60);
+        Parsed.as_object(), "availableMinutes", 1, 24 * 60);
     if (!Servings.HasValue() || !AvailableMinutes.HasValue()) {
         return Foundation::Result<Domain::RecommendationRequest>::FromError(
             Support::InvalidRequest("推荐请求份量或时间无效"));

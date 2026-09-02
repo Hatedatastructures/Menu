@@ -1,7 +1,7 @@
 import { BookOpen, FilePenLine, FlaskConical, Plus, Search } from "lucide-react";
 import { useMemo, useState } from "react";
 import type { Recipe, RecipeStatus } from "../api";
-import { PageHeading, StatusBadge } from "../components/AdminPrimitives";
+import { PageHeading, StatusBadge } from "../Components/AdminPrimitives";
 import { FilterRecipes } from "../uiModel";
 
 export function RecipeManagerPage({

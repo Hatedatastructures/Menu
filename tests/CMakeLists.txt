@@ -1,2 +1,2 @@
-add_subdirectory(unit)
-add_subdirectory(integration)
+add_subdirectory(Unit)
+add_subdirectory(Integration)

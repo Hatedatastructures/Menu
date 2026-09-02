@@ -1,6 +1,6 @@
 import { BookOpen, Check, Clock3, FilePenLine, Send, ShoppingBasket, ChevronDown } from "lucide-react";
 import type { Ingredient, Recipe } from "../api";
-import { Metric, PageHeading, RecipeRow } from "../components/AdminPrimitives";
+import { Metric, PageHeading, RecipeRow } from "../Components/AdminPrimitives";
 
 export function OverviewPage({
   recipes,

@@ -8,17 +8,35 @@ file(GENERATE
 add_library(MenuInfrastructure STATIC
     SqliteDatabase.cpp
     SqliteCookingSessionRepository.cpp
+    SqliteAdminRecipeRepository.cpp
+    SqliteAdminIngredientRepository.cpp
     SqliteFeedbackRepository.cpp
-    SqliteMealPlanRepository.cpp
+    SqliteMealPlanRepositoryRead.cpp
+    SqliteMealPlanRepositorySupport.cpp
+    SqliteMealPlanRepositoryWrite.cpp
     MigrationRunner.cpp
-    SqliteRecipeRepository.cpp
-    SqliteIngredientRepository.cpp
+    SqliteRecipeRepositoryRead.cpp
+    SqliteRecipeRepositoryReadSupport.cpp
+    SqliteRecipeRepositoryWriteSupport.cpp
+    SqliteRecipeRepositoryWrite.cpp
+    SqliteIngredientRepositoryRead.cpp
+    SqliteIngredientRepositorySupport.cpp
+    SqliteIngredientRepositoryWrite.cpp
     PasswordHasher.cpp
     TokenService.cpp
     SqliteAuthRepository.cpp
+    SqliteAuthRepositorySupport.cpp
+    SqliteAuthRepositoryTokens.cpp
     SqliteAuthService.cpp
+    SqliteAuthServiceTokenFlow.cpp
+    SqliteAuthServiceValidation.cpp
     SqliteWorkflowSupport.cpp
+    SeedCatalog.cpp
+    SeedCatalog.hpp
     SeedData.cpp
+    SeedDataIngredient.cpp
+    SeedDataRecipe.cpp
+    SeedDataRows.hpp
 )
 target_include_directories(MenuInfrastructure PUBLIC
     "${PROJECT_SOURCE_DIR}/server"

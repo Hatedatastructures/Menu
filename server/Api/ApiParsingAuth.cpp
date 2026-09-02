@@ -44,7 +44,7 @@ Foundation::Result<AuthPayload> ReadAuthPayload(
         return Payload;
     }
     const auto Email = ReadRequiredString(Parsed.as_object(), "email", 320U);
-    const std::size_t PasswordMaximumLength = Kind == "login" ? 64U * 1024U : 128U;
+    const std::size_t PasswordMaximumLength = 128U;
     const auto Password = ReadRequiredString(
         Parsed.as_object(), "password", PasswordMaximumLength);
     if (!Email.HasValue() || !Password.HasValue()) {
@@ -55,7 +55,7 @@ Foundation::Result<AuthPayload> ReadAuthPayload(
     Payload.Password = Password.Value();
     if (Kind == "register") {
         const auto DisplayName = ReadRequiredString(
-            Parsed.as_object(), "displayName", 80U);
+            Parsed.as_object(), "displayName", 64U);
         if (!DisplayName.HasValue()) {
             return Foundation::Result<AuthPayload>::FromError(DisplayName.ErrorValue());
         }

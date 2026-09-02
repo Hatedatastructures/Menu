@@ -41,7 +41,7 @@ Foundation::Error InvalidRequest(std::string Message) {
 Foundation::Result<std::vector<Recommendation>> RuleBasedRecommendation::Rank(
     const RecommendationRequest& Request,
     const std::vector<Recipe>& Recipes) {
-    if (Request.Servings <= 0 || Request.AvailableMinutes < 0) {
+    if (Request.Servings <= 0 || Request.AvailableMinutes < 1) {
         return Foundation::Result<std::vector<Recommendation>>::FromError(
             InvalidRequest("推荐请求的份量或可用时间无效"));
     }

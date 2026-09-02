@@ -79,6 +79,24 @@ Foundation::Result<void> BindInteger(
     return Foundation::Result<void>();
 }
 
+Foundation::Result<void> BindInt(
+    sqlite3_stmt* Statement,
+    int Index,
+    int Value) {
+    return BindInteger(Statement, Index, static_cast<std::int64_t>(Value));
+}
+
+Foundation::Result<void> BindDouble(
+    sqlite3_stmt* Statement,
+    int Index,
+    double Value) {
+    if (sqlite3_bind_double(Statement, Index, Value) != SQLITE_OK) {
+        return Foundation::Result<void>::FromError(
+            Foundation::Error(Foundation::ErrorCode::StorageUnavailable, "SQLite 绑定失败"));
+    }
+    return Foundation::Result<void>();
+}
+
 std::string ColumnText(sqlite3_stmt* Statement, int Column) {
     const unsigned char* TextValue = sqlite3_column_text(Statement, Column);
     return TextValue == nullptr ? std::string() : reinterpret_cast<const char*>(TextValue);

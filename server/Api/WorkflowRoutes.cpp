@@ -16,9 +16,6 @@ std::optional<Transport::HttpResponse> Route(
     const Parsing::TargetParts& Target,
     std::string_view RequestId) {
     if (Target.Path == "/api/v1/plans") {
-        if (Context.MealPlans == nullptr) {
-            return ApiErrors::Create(503, "workflow_unavailable", "计划服务暂时不可用", RequestId);
-        }
         const auto UserResult = Middleware::RequireUser(Context.Authentication, Request);
         if (!UserResult.HasValue()) {
             return Middleware::WorkflowError(UserResult.ErrorValue(), RequestId);
@@ -28,7 +25,7 @@ std::optional<Transport::HttpResponse> Route(
             if (!QueryResult.HasValue()) {
                 return ApiErrors::Create(400, "invalid_query", "查询参数无效", RequestId);
             }
-            const auto PlansResult = Context.MealPlans->List(
+            const auto PlansResult = Context.MealPlans.List(
                 UserResult.Value().Id,
                 QueryResult.Value().first,
                 QueryResult.Value().second);
@@ -46,7 +43,7 @@ std::optional<Transport::HttpResponse> Route(
             if (!Payload.HasValue()) {
                 return ApiErrors::Create(400, "invalid_body", "请求内容无效", RequestId);
             }
-            const auto PlanResult = Context.MealPlans->Save(
+            const auto PlanResult = Context.MealPlans.Save(
                 UserResult.Value().Id, Payload.Value().PlanDate, Payload.Value().Items);
             if (!PlanResult.HasValue()) {
                 return Middleware::WorkflowError(PlanResult.ErrorValue(), RequestId);
@@ -60,9 +57,6 @@ std::optional<Transport::HttpResponse> Route(
     constexpr std::string_view CookingSessionPrefix = "/api/v1/cooking-sessions";
     if (Target.Path == CookingSessionPrefix ||
         Target.Path.starts_with(std::string(CookingSessionPrefix) + "/")) {
-        if (Context.CookingSessions == nullptr) {
-            return ApiErrors::Create(503, "workflow_unavailable", "做饭服务暂时不可用", RequestId);
-        }
         const auto UserResult = Middleware::RequireUser(Context.Authentication, Request);
         if (!UserResult.HasValue()) {
             return Middleware::WorkflowError(UserResult.ErrorValue(), RequestId);
@@ -78,7 +72,7 @@ std::optional<Transport::HttpResponse> Route(
             if (!RecipeId.HasValue() || Parsed.as_object().size() != 1U) {
                 return ApiErrors::Create(400, "invalid_body", "请求内容无效", RequestId);
             }
-            const auto SessionResult = Context.CookingSessions->Create(
+            const auto SessionResult = Context.CookingSessions.Create(
                 UserResult.Value().Id, RecipeId.Value());
             if (!SessionResult.HasValue()) {
                 return Middleware::WorkflowError(SessionResult.ErrorValue(), RequestId);
@@ -96,7 +90,7 @@ std::optional<Transport::HttpResponse> Route(
             if (!Payload.HasValue()) {
                 return ApiErrors::Create(400, "invalid_body", "请求内容无效", RequestId);
             }
-            const auto SessionResult = Context.CookingSessions->Update(
+            const auto SessionResult = Context.CookingSessions.Update(
                 UserResult.Value().Id,
                 SessionId,
                 Payload.Value().CurrentStepOrder,
@@ -111,9 +105,6 @@ std::optional<Transport::HttpResponse> Route(
     }
 
     if (Request.Method == "POST" && Target.Path == "/api/v1/feedback") {
-        if (Context.Feedbacks == nullptr) {
-            return ApiErrors::Create(503, "workflow_unavailable", "反馈服务暂时不可用", RequestId);
-        }
         const auto UserResult = Middleware::RequireUser(Context.Authentication, Request);
         if (!UserResult.HasValue()) {
             return Middleware::WorkflowError(UserResult.ErrorValue(), RequestId);
@@ -122,7 +113,7 @@ std::optional<Transport::HttpResponse> Route(
         if (!Payload.HasValue()) {
             return ApiErrors::Create(400, "invalid_body", "请求内容无效", RequestId);
         }
-        const auto FeedbackResult = Context.Feedbacks->Create(
+        const auto FeedbackResult = Context.Feedbacks.Create(
             UserResult.Value().Id,
             Payload.Value().RecipeId,
             Payload.Value().Outcome,

@@ -1,9 +1,9 @@
 import { Check, FilePenLine, Plus, Search, ShoppingBasket } from "lucide-react";
 import { useState } from "react";
 import type { Ingredient } from "../api";
-import { PageHeading } from "../components/AdminPrimitives";
+import { PageHeading } from "../Components/AdminPrimitives";
 import { EmptyIngredient, } from "../contentModels";
-import { IngredientEditor } from "../components/IngredientEditor";
+import { IngredientEditor } from "../Components/IngredientEditor";
 
 export function IngredientManagerPage({
   token,

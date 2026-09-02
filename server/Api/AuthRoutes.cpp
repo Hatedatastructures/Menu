@@ -21,9 +21,6 @@ std::optional<Transport::HttpResponse> Route(
          Target.Path != "/api/v1/auth/refresh")) {
         return std::nullopt;
     }
-    if (Context.Authentication == nullptr) {
-        return ApiErrors::Create(503, "auth_unavailable", "认证服务暂时不可用", RequestId);
-    }
     const std::string Kind = Target.Path.ends_with("/register")
         ? "register"
         : Target.Path.ends_with("/login") ? "login" : "refresh";
@@ -35,15 +32,15 @@ std::optional<Transport::HttpResponse> Route(
         Foundation::Result<Application::AuthResponse>::FromError(
             Foundation::Error(Foundation::ErrorCode::AuthenticationFailed, "认证失败"));
     if (Kind == "register") {
-        AuthResult = Context.Authentication->Register(
+        AuthResult = Context.Authentication.Register(
             Payload.Value().Email,
             Payload.Value().Password,
             Payload.Value().DisplayName);
     } else if (Kind == "login") {
-        AuthResult = Context.Authentication->Login(
+        AuthResult = Context.Authentication.Login(
             Payload.Value().Email, Payload.Value().Password);
     } else {
-        AuthResult = Context.Authentication->Refresh(Payload.Value().RefreshToken);
+        AuthResult = Context.Authentication.Refresh(Payload.Value().RefreshToken);
     }
     if (!AuthResult.HasValue()) {
         return Middleware::AuthError(AuthResult.ErrorValue(), RequestId);

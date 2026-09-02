@@ -1,6 +1,6 @@
 # Menu 调研与技术依据
 
-更新时间：2026-09-01
+更新时间：2026-09-02
 
 本文件记录已核对的官方资料、对实现的约束和仍需实测的事项。网页内容会更新，构建时以本机 Qt 6.8.3、实际 Boost 版本和锁定下载哈希为准。
 
@@ -21,16 +21,19 @@
 
 ## 当前环境实测
 
-- Qt 6.8.3 Android target 使用官方源码 `qt-everywhere-src-6.8.3`，`android-clang`、x86_64、API 28、Clang 17.0.2，构建和 `cmake --install` 的退出码均为 0。安装 prefix 是 `I:\code\Menu\.tools\qt-android\6.8.3\android_x86_64`，已检查 `qmake.bat`、`qt-cmake.bat` 和 `Qt6Config.cmake`。
+- Qt 6.8.3 Android target 使用官方源码 `qt-everywhere-src-6.8.3`，`android-clang`、API 28、Clang 17.0.2，x86_64 与 `arm64-v8a` 两套构建和 `cmake --install` 的退出码均为 0。安装 prefix 分别是 `I:\code\Menu\.tools\qt-android\6.8.3\android_x86_64` 和 `I:\code\Menu\.tools\qt-android\6.8.3\android_arm64_v8a`，已检查 `qmake.bat`、`qt-cmake.bat` 和 `Qt6Config.cmake`。
 - Qt 的 `androiddeployqt` 特性要求非 cross compile；因此 Android target prefix 不会包含该 host 工具。当前使用 Qt 6.8.3 host kit 的 `C:\Qt\6.8.3\mingw_64\bin\androiddeployqt.exe`，这也是 Qt Android CMake macros 的 `QT_HOST_PATH` 选择，并已成功生成 APK。
 - `MenuApi36` AVD 的 `androidboot.qemu.vsync=60`，不是 120Hz 设备。窗口化对照可以通过 `adb screencap` 看到完整 Qt 页面；`-no-window` headless 实例只适合作为非视觉启动测试，不能把黑帧当作产品截图。
 - Android 首屏第一次出现 `loadFromModule` 不返回、窗口化截图全黑；将 `Main.qml` 的五页 eager instantiation 改为当前页首次加载并保留实例的 `Loader` 后，Android 日志出现 `qml-loaded 1`，窗口化截图显示真实推荐、中文文案、本地位图和底部导航。
+- 客户端连接设置使用严格的 `http/https + host + port` 解析，地址写入本地 `connection.json`；切换地址会清理内存会话并切换独立的服务端缓存目录，健康检查请求 `/healthz`。Android manifest 允许显式配置的局域网 HTTP，同时 UI 对明文连接给出警告。
+- Android 通知由 `MenuClientPlatform` 的 `NotificationController` 通过独立 `NotificationBackend` 调用 Java bridge，`CookingTimerCoordinator` 负责稳定的菜谱/步骤 ID；系统栏由独立 `SystemUiBackend/SystemUiBridge` 管理，`MenuActivity` 在 resume/focus 生命周期重新应用系统栏外观。Android 8+ 创建“做饭计时/备菜提醒”渠道，Android 13+ 请求 `POST_NOTIFICATIONS`，计时使用 `AlarmManager` 的 elapsed realtime，并持久化 wall-clock deadline 以便设备重启恢复；系统负责深浅色、声音和用户对渠道震动设置的最终控制。
+- Android 官方自适应布局建议按窗口尺寸切换底部导航、导航栏和列表/详情结构；本客户端以 720/980 logical px 断点切换导航和菜谱网格，并把状态保存在 C++ 模型而不是 delegate。edge-to-edge 场景通过平台状态栏高度 inset 避免内容被系统栏覆盖。
 
 ## 关键设计推导
 
 ### UI 帧预算
 
-120Hz 的目标预算是 8.33 ms/frame，但这是测量目标而不是产品承诺。首屏和滚动路径上禁止同步网络、SQLite、磁盘和大图解码；图片使用本地资源和明确的 sourceSize；列表只渲染需要的 delegate。设备若只支持 60Hz 或 90Hz，就记录实际刷新率和帧时间，不宣称 120fps。
+120Hz 的目标预算是 8.33 ms/frame，但这是测量目标而不是产品承诺。客户端读取 `QScreen::refreshRate()`，无有效值时使用 120Hz fallback；视觉帧由 Qt 的 vsync/`QWindow::requestUpdate()` 驱动，不用定时器模拟刷新率。首屏和滚动路径上禁止同步网络、SQLite、磁盘和大图解码；图片使用本地资源和明确的 sourceSize；列表只渲染需要的 delegate。设备若只支持 60Hz 或 90Hz，就记录实际刷新率和帧时间，不宣称 120fps。
 
 ### SQLite 与异步服务端
 
@@ -48,5 +51,5 @@ SQLite 的事务和 WAL 能满足本地首版，但 SQLite API 本身是同步�
 
 - Linux 编译器、CTest 和 Linux 运行时验证。
 - QML Profiler/Perfetto 的完整首屏与滚动帧时间；当前只保留桌面 smoke 和 Android gfxinfo 启动样本。
-- ARM Android 真机、120Hz 设备和 Android release 签名包。
+- ARM Android 真机、120Hz 设备和 Android release 签名包；当前 debug 包已使用 target SDK 35 并在 Android 36 AVD 验证 edge-to-edge。
 - 生产 TLS 证书/反向代理部署；当前本地 HTTP 验证不等于公网部署验证。

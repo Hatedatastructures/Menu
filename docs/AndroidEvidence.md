@@ -1,43 +1,60 @@
 # Android 验证证据
 
-更新时间：2026-09-01
+更新时间：2026-09-02
 
 ## 工具链
 
-- Qt 6.8.3 target prefix：`I:\code\Menu\.tools\qt-android\6.8.3\android_x86_64`。
-- target 配置：`android-clang`、x86_64、API 28、Clang 17.0.2；Qt source build 和 `cmake --install` 均为退出码 0，已检查 `bin\qmake.bat`、`bin\qt-cmake.bat` 和 `lib\cmake\Qt6\Qt6Config.cmake`。
+- Qt 6.8.3 target prefix：`I:\code\Menu\.tools\qt-android\6.8.3\android_x86_64`（x86_64 AVD）和 `I:\code\Menu\.tools\qt-android\6.8.3\android_arm64_v8a`（ARM64 真机）。
+- target 配置：`android-clang`、API 28、Clang 17.0.2；x86_64 与 `arm64-v8a` 的 Qt source build 和 `cmake --install` 均为退出码 0，两个 prefix 均已检查 `bin\qmake.bat`、`bin\qt-cmake.bat` 和 `lib\cmake\Qt6\Qt6Config.cmake`。
 - Qt cross-build 按设计不生成 host `androiddeployqt`；APK 使用已安装的 Windows host kit `C:\Qt\6.8.3\mingw_64\bin\androiddeployqt.exe`。
 - JDK 17.0.20.1、Android SDK platform-tools 37.0.1、platform android-36、build-tools 36.0.0、NDK 26.1.10909125、Gradle 8.10 和 Ninja 1.13.1 均在 I 盘。
 
 ## APK
 
 ```text
-build/QtAndroidFinal/client/android-build/build/outputs/apk/debug/android-build-debug.apk
-size: 27,214,651 bytes
-sha256: FFBE9972FE920957E637385B4A29BB9B3E830FA3B375E9F621B092E716F2FFAE
+build/QtAndroidDebug/client/android-build/build/outputs/apk/debug/android-build-debug.apk
+size: 28,758,117 bytes
+sha256: A5A0A2C8FCA5534D733B27719733180FC12332B92DE1C6B1674CB7B2AD7E1CD2
 package: com.menu.cookflow
 abi: x86_64
 ```
 
-`QtAndroidFinal` 的 Ninja 构建（56/56）和 Gradle `assembleDebug` 均退出码 0；旧 debug 包签名冲突时 `adb install -r` 的退出码为 1，随后精确卸载并重新安装当前包，`adb uninstall` 和 `adb install` 均退出码 0，详见 `docs/evidence-android-install-final.txt`。
+`QtAndroidDebug` 的 `MenuClientApp` Ninja 构建和 Gradle `assembleDebug` 均退出码 0；当前 debug 包使用 v2 签名，x86_64 AVD 安装和启动均通过。
+
+## ARM64 真机包
+
+```text
+build/QtAndroidArm64Debug/client/android-build/build/outputs/apk/debug/android-build-debug.apk
+size: 28,122,475 bytes
+sha256: ACD2CC349D0FB9F2BD9DF70838E7FA261725ABD9C8A10B3E680241AB05CB0B57
+package: com.menu.cookflow
+abi: arm64-v8a
+minSdk: 28
+targetSdk: 35
+```
+
+`QtAndroidArm64Debug` 的 CMake `apk` 目标和 Gradle `assembleDebug` 均退出码 0。`aapt2 dump badging` 报告 `native-code: 'arm64-v8a'`；APK 内 82 个 native 条目全部位于 `lib/arm64-v8a`，未发现 x86/x86_64 条目；`POST_NOTIFICATIONS`、`RECEIVE_BOOT_COMPLETED`、`SCHEDULE_EXACT_ALARM`、通知 receiver、白色小图标、主题/系统栏和分模块 QML 均已合入。debug manifest 允许局域网 HTTP，release manifest 已验证 `usesCleartextTraffic=false`。当前没有连接实体手机，因此尚未在用户的 Android 16 设备上执行 adb 安装。
+
+## 本轮 UI 与通知回归
+
+- x86_64 AVD fresh APK：`build/QtAndroidDebug/client/android-build/build/outputs/apk/debug/android-build-debug.apk`，size `28,758,049` bytes，sha256 `1E2CB79FFA110B57FCF09E9E885871E286076DE1A7B0427FBE96444234666171`；本轮 `MenuClientApp` target 重命名、`MenuActivity`/系统栏适配和 UI 调整后卸载、全新安装、启动和在线首屏回归通过。常亮控制已接入客户端并由桌面单测覆盖，尚未用 Android `dumpsys` 单独取证。
+- 当前 UI 截图：`build/QtAndroidDebug/ui-final-current.png`、`build/QtAndroidDebug/ui-final-profile-device.png`、`build/QtAndroidDebug/ui-final-profile-device-dark.png`、`build/QtAndroidDebug/ui-final-cooking.png`、`build/QtAndroidDebug/ui-live-awake-detail-new.png`；浅色主题使用深色状态栏图标、深色主题使用白色状态栏图标，服务器地址设置、刷新率、通知权限、通知设置和做饭页面均已实测。最新做饭页截图确认无时长步骤不显示 0 秒计时。
+- 最新 AVD 常亮取证：进入做饭页后 `dumpsys window windows` 的应用窗口包含 `fl=KEEP_SCREEN_ON`；退出做饭页的清理逻辑由 `ScreenAwakeController` 单测覆盖。截图 `ui-live-awake-detail-new.png`，SHA256 `F11F793159A6B2A3BB56AFABA06BBF852430F4D20B6E62566D25FD02A5F90494`。
+- `dumpsys notification` 看到 `cooking_timers`（高优先级、双震动）与 `meal_reminders`（默认优先级）两个渠道，并实际发布 `Menu 通知测试`；通知应用总开关/渠道关闭时 `PermissionGranted` 会变为 false。本轮重新打包后，x86_64 AVD 卸载/安装/启动与测试通知回归均通过，日志未出现 `AndroidRuntime`、`FATAL EXCEPTION`、`UnsatisfiedLinkError` 或 `QmlWarning`。
 
 ## 窗口化 AVD
 
-- AVD：`MenuApi36`，Android 36 Google APIs x86_64，窗口化参数 `-no-audio -no-boot-anim -gpu host`。
-- 本轮窗口化 emulator PID：`3164`；应用进程 PID：`3711`（仅对应本轮最终 APK 采集）。
+- AVD：`MenuApi36`，Android 36 Google APIs x86_64，窗口化参数 `-no-audio -no-boot-anim -gpu host`；target SDK 35 的 edge-to-edge 窗口已实测。
+- 本轮使用窗口化 emulator 采集截图；进程 PID 属于临时运行态，不作为可复用证据。
 - `androidboot.qemu.vsync=60`，因此只能验证 60Hz AVD 行为，不能宣称 120fps。gfxinfo 是短时启动样本，不是完整滚动性能剖析。
 - 早期 `-no-window` 黑帧只作为失败背景保留；当前窗口化截图有真实 Qt 内容，排除了将黑屏直接归因于 screencap 的判断。
 
 ## 当前 APK 截图
 
-- 首屏在线推荐：`docs/evidence-android-final-clean-first-screen.png`，SHA256 `1BD781B8B4D5EEC1FEFFA5E18241A210D8DC5D7D240E705877002D92B8E1343A`。
-- 登录后设置：`docs/evidence-android-final-profile-authenticated.png`，SHA256 `717AB3B3476D83D5DA129A92F45DB0CEFA344696639EF58E5939A4635174E580`。
-- 登录后今晚：`docs/evidence-android-final-authenticated-tonight.png`，SHA256 `1F28B573D911D8FEE9D1141CABFBB82B0C4C90E71267AFDDC1EF4CAACE4A2A3D`。
-- 本周方案：`docs/evidence-android-final-week-options.png`，SHA256 `6D57B1BE6EEE6BB2BD5BFD57ABC9FC3DF47A187D4A092C80E5895EF7E721321A`。
-- 两道菜和合并清单：`docs/evidence-android-final-week-merged-two-recipes.png`，SHA256 `6933E267213FAC5CF8F60C3E777EC01CB04DF1EE3D6CBA01EF047A6A219EC314`。
-- 做饭页：`docs/evidence-android-final-cooking.png`，SHA256 `D5121D312DDA0491C2713EAD4047A935015051C21FDD8AF82B2E6BFC3F231A3E`。
-- 计时运行中：`docs/evidence-android-final-cooking-timer.png`，SHA256 `EC930674AD096B5657326D2D947E7A6BB68295D8446CDC5B6D35A6CD064347CF`。
-- 第一步完成：`docs/evidence-android-final-cooking-complete.png`，SHA256 `7FC856E7334A26C2FC26DF09EB97CC738CC4DA257A942B15AE8320B5BEDF2B27`。
+- 在线首屏推荐：`build/QtAndroidDebug/ui-final-current.png`，SHA256 `542674ED4D382BF1B9593773F15542462B6810AC47424D69C647126BC5BA88EE`。
+- 我的页与服务端设置：`build/QtAndroidDebug/ui-final-current-profile.png`，SHA256 `FAF36D07671ADDE73D6EA276A8D15564F1281BF1B44277A4264C145A20FC03D4`。
+- 深色主题与刷新率/通知设置：`build/QtAndroidDebug/ui-final-current-profile-dark-notifications.png`，SHA256 `0D1D28BF9629BF4D9A8B779A3495A600B88868D653BE27F716178138F16D1A74`。
+- 深色主题设置中间状态：`build/QtAndroidDebug/ui-final-current-profile-dark.png`，SHA256 `C20DAE38B09C9CE5EBD663C92546DF47070E850FDB7C4BF2E7C93F9857BEEEA4`。
 
 ## 日志
 
@@ -51,5 +68,5 @@ abi: x86_64
 
 ## 未验证
 
-- ARM Android 真机、真实 120Hz 设备、Android release 签名包和 iOS 没有当前主机证据。
+- ARM Android 16 真机的实际安装和运行、真实 120Hz 设备、Android release 签名包和 iOS 没有当前主机证据；ARM64 APK 本身已完成静态验收。设备页会将实测屏幕刷新率与缺失指标时的 `120 Hz 预算` 分开显示，不把预算冒充硬件刷新率。
 - QML Profiler/Perfetto 的完整首屏与滚动帧时间尚未建立；当前只有桌面 smoke 和 Android gfxinfo 启动样本。

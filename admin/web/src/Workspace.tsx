@@ -1,13 +1,13 @@
 import { BookOpen, LayoutDashboard, LogOut, Menu as MenuIcon, ShoppingBasket } from "lucide-react";
 import { useEffect, useState } from "react";
 import { AdminApi, ApiError, IngredientApi, type Ingredient, type Recipe } from "./api";
-import { IngredientEditor } from "./components/IngredientEditor";
-import { RecipeEditor } from "./components/RecipeEditor";
-import { ErrorState, LoadingState, NavItem } from "./components/AdminPrimitives";
+import { IngredientEditor } from "./Components/IngredientEditor";
+import { RecipeEditor } from "./Components/RecipeEditor";
+import { ErrorState, LoadingState, NavItem } from "./Components/AdminPrimitives";
 import { EmptyRecipe } from "./contentModels";
-import { IngredientManagerPage } from "./pages/IngredientManagerPage";
-import { OverviewPage } from "./pages/OverviewPage";
-import { RecipeManagerPage } from "./pages/RecipeManagerPage";
+import { IngredientManagerPage } from "./Pages/IngredientManagerPage";
+import { OverviewPage } from "./Pages/OverviewPage";
+import { RecipeManagerPage } from "./Pages/RecipeManagerPage";
 
 type View = "overview" | "recipes" | "ingredients";
 

@@ -1,16 +1,10 @@
 #pragma once
 
-#include <Application/AdminRecipeApplicationService.hpp>
-#include <Application/AdminIngredientApplicationService.hpp>
-#include <Application/AuthService.hpp>
-#include <Application/CookingSessionApplicationService.hpp>
-#include <Application/FeedbackApplicationService.hpp>
-#include <Application/MealPlanApplicationService.hpp>
-#include <Application/RecipeApplicationService.hpp>
-#include <Application/StorageExecutor.hpp>
+#include <Api/ApiDependencies.hpp>
 #include <Transport/Core/HttpHandler.hpp>
 
 #include <atomic>
+#include <functional>
 #include <string>
 #include <vector>
 
@@ -18,22 +12,15 @@ namespace Menu::Api {
 
 class ApiRouter final {
 public:
-    ApiRouter(
-        Application::RecipeApplicationService& ServiceValue,
-        Application::StorageExecutor& StorageValue,
-        Application::AuthService* AuthenticationValue = nullptr,
-        Application::AdminRecipeApplicationService* AdminServiceValue = nullptr,
-        std::vector<std::string> CorsOriginsValue = {},
-        Application::AdminIngredientApplicationService* AdminIngredientServiceValue = nullptr,
-        Application::MealPlanApplicationService* MealPlanServiceValue = nullptr,
-        Application::CookingSessionApplicationService* CookingSessionServiceValue = nullptr,
-        Application::FeedbackApplicationService* FeedbackServiceValue = nullptr);
+    explicit ApiRouter(ApiDependencies DependenciesValue);
 
     void Handle(
         Transport::HttpRequest Request,
         Transport::HttpResponseCallback Complete);
 
     void SetReady(bool ReadyValue) noexcept;
+    void SetCompletionDispatcher(
+        Application::StorageExecutor::CompletionDispatcher DispatcherValue);
 
 private:
     Transport::HttpResponse Route(
@@ -42,13 +29,14 @@ private:
 
     Application::RecipeApplicationService& Service;
     Application::StorageExecutor& Storage;
-    Application::AuthService* Authentication = nullptr;
-    Application::AdminRecipeApplicationService* AdminService = nullptr;
-    Application::AdminIngredientApplicationService* AdminIngredientService = nullptr;
-    Application::MealPlanApplicationService* MealPlans = nullptr;
-    Application::CookingSessionApplicationService* CookingSessions = nullptr;
-    Application::FeedbackApplicationService* Feedbacks = nullptr;
+    Application::AuthService& Authentication;
+    Application::AdminRecipeApplicationService& AdminService;
+    Application::AdminIngredientApplicationService& AdminIngredientService;
+    Application::MealPlanApplicationService& MealPlans;
+    Application::CookingSessionApplicationService& CookingSessions;
+    Application::FeedbackApplicationService& Feedbacks;
     std::vector<std::string> CorsOrigins;
+    Application::StorageExecutor::CompletionDispatcher CompletionDispatcher;
     std::atomic<bool> Ready = false;
 };
 

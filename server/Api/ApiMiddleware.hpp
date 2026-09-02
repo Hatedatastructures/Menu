@@ -41,11 +41,11 @@ Transport::HttpResponse WorkflowError(
     std::string_view Id);
 
 Foundation::Result<Application::AuthUser> RequireUser(
-    Application::AuthService* Authentication,
+    Application::AuthService& Authentication,
     const Transport::HttpRequest& Request);
 
 Foundation::Result<Application::AuthUser> RequireAdmin(
-    Application::AuthService* Authentication,
+    Application::AuthService& Authentication,
     const Transport::HttpRequest& Request);
 
 }  // namespace Menu::Api::Middleware

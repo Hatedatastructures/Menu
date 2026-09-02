@@ -6,11 +6,11 @@
 /.npm-cache/
 /admin/web/node_modules/
 /client/build/
-/client/android/build/
-/server/data/*.db
-/server/data/*.db-shm
-/server/data/*.db-wal
-/server/data/*.db-journal
+/client/Android/build/
+/server/Data/*.db
+/server/Data/*.db-shm
+/server/Data/*.db-wal
+/server/Data/*.db-journal
 
 # Local IDE and operating-system files.
 .idea/

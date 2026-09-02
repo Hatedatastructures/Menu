@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { LoginScreen } from "./pages/LoginScreen";
+import { LoginScreen } from "./Pages/LoginScreen";
 import { Workspace } from "./Workspace";
 
 function App() {

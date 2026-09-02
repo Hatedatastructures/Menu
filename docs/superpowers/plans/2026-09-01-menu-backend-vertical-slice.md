@@ -39,8 +39,8 @@
 - Create: `server/Api/CMakeLists.txt`
 - Create: `server/Main.cpp`
 - Create: `tests/CMakeLists.txt`
-- Create: `tests/unit/CMakeLists.txt`
-- Create: `tests/unit/BootstrapContractTest.cpp`
+- Create: `tests/Unit/CMakeLists.txt`
+- Create: `tests/Unit/BootstrapContractTest.cpp`
 - Create: `tests/TestMain.cpp`
 - Create: `shared/schema/MenuApi.yaml`
 
@@ -141,8 +141,8 @@ git commit -m "build: bootstrap Menu CMake targets and tests"
 - Create: `server/Domain/RecipeRules.hpp`
 - Create: `server/Domain/RecipeRules.cpp`
 - Create: `tests/TestFixtures/RecipeFixtures.hpp`
-- Create: `tests/unit/RecipeRulesTest.cpp`
-- Create: `tests/unit/RecommendationRulesTest.cpp`
+- Create: `tests/Unit/RecipeRulesTest.cpp`
+- Create: `tests/Unit/RecommendationRulesTest.cpp`
 
 **Interfaces:**
 - `Menu::Foundation::Result<T>` exposes `HasValue()`, `Value()`, `ErrorValue()` and `FromError(Error)`.
@@ -239,7 +239,7 @@ Expected: every focused test passes with no warning introduced by Menu code.
 - [x] **Step 6: Commit the domain slice**
 
 ```powershell
-git add server/Foundation server/Domain tests/unit
+git add server/Foundation server/Domain tests/Unit
 git commit -m "feat: add recipe domain rules and recommendations"
 ```
 
@@ -256,8 +256,8 @@ git commit -m "feat: add recipe domain rules and recommendations"
 - Create: `server/Infrastructure/SeedData.cpp`
 - Create: `server/Infrastructure/Migrations/001Initial.sql`
 - Create: `tests/TestFixtures/DatabaseFixtures.hpp`
-- Create: `tests/unit/SqliteMigrationTest.cpp`
-- Create: `tests/unit/SqliteRecipeRepositoryTest.cpp`
+- Create: `tests/Unit/SqliteMigrationTest.cpp`
+- Create: `tests/Unit/SqliteRecipeRepositoryTest.cpp`
 - Modify: `cmake/Dependencies.cmake`
 - Modify: `server/Infrastructure/CMakeLists.txt`
 
@@ -319,7 +319,7 @@ Expected: all storage tests pass; test output reports the temporary database use
 - [x] **Step 8: Commit the storage slice**
 
 ```powershell
-git add cmake server/Infrastructure tests/unit docs/Downloads.md
+git add cmake server/Infrastructure tests/Unit docs/Downloads.md
 git commit -m "feat: add sqlite migrations and recipe repository"
 ```
 
@@ -335,8 +335,8 @@ git commit -m "feat: add sqlite migrations and recipe repository"
 - Create: `server/Application/StorageExecutor.hpp`
 - Create: `server/Application/StorageExecutor.cpp`
 - Create: `tests/TestFixtures/ApplicationFixtures.hpp`
-- Create: `tests/unit/RecipeApplicationServiceTest.cpp`
-- Create: `tests/unit/StorageExecutorTest.cpp`
+- Create: `tests/Unit/RecipeApplicationServiceTest.cpp`
+- Create: `tests/Unit/StorageExecutorTest.cpp`
 
 **Interfaces:**
 - `RecipeApplicationService::ListPublishedRecipes()` and `FindPublishedRecipe(std::string_view)` are synchronous repository calls intended only for the storage executor.
@@ -398,7 +398,7 @@ Use `boost::asio::thread_pool` with one writer strand and a bounded read pool. E
 cmake --build --preset WindowsDebug --parallel 2
 ctest --preset WindowsDebug -R "RecipeApplicationServiceTest|StorageExecutorTest" --output-on-failure
 git diff --check
-git add server/Application tests/unit
+git add server/Application tests/Unit
 git commit -m "feat: add recipe application service and storage executor"
 ```
 
@@ -413,8 +413,8 @@ git commit -m "feat: add recipe application service and storage executor"
 - Create: `server/Transport/HttpServer.cpp`
 - Create: `server/Transport/HttpSession.hpp`
 - Create: `server/Transport/HttpSession.cpp`
-- Create: `tests/integration/HttpTransportTest.cpp`
-- Create: `tests/integration/CMakeLists.txt`
+- Create: `tests/Integration/HttpTransportTest.cpp`
+- Create: `tests/Integration/CMakeLists.txt`
 
 **Interfaces:**
 - `HttpServer(io_context&, HttpServerOptions, HttpExecutorPost)` constructs the listener; `Start(HttpHandler)` asynchronously accepts TCP connections and exposes `LocalPort()`.
@@ -450,7 +450,7 @@ Verify 400 for invalid parser input, 413 for a body over 1 MiB, connection close
 cmake --build --preset WindowsDebug --parallel 2
 ctest --preset WindowsDebug -R HttpTransportTest --output-on-failure
 git diff --check
-git add server/Transport tests/integration cmake/TargetBoundaries.cmake
+git add server/Transport tests/Integration cmake/TargetBoundaries.cmake
 git commit -m "feat: add asynchronous neutral http transport"
 ```
 
@@ -463,7 +463,7 @@ git commit -m "feat: add asynchronous neutral http transport"
 - Create: `server/Api/RecipeDtos.hpp`
 - Create: `server/Api/RecipeDtos.cpp`
 - Create: `server/Main.cpp`
-- Create: `tests/integration/MenuApiTest.cpp`
+- Create: `tests/Integration/MenuApiTest.cpp`
 - Create: `config/Menu.example.json`
 - Modify: `server/CMakeLists.txt`
 - Modify: `server/Api/CMakeLists.txt`
@@ -506,7 +506,7 @@ Parse query values with bounded integer conversion; reject empty/overlong IDs, i
 
 - [x] **Step 5: Implement server startup and graceful shutdown**
 
-Read `config/Menu.example.json` defaults: `127.0.0.1:8080`, `server/data/menu.db`, `assets/media`, body limit 1 MiB, CORS allowlist empty. Create directories, migrate, seed, start io_context threads sized to `max(2, hardware_concurrency/2)` and join all executors on exit.
+Read `config/Menu.example.json` defaults: `127.0.0.1:8080`, `server/Data/menu.db`, `assets/media`, body limit 1 MiB, CORS allowlist empty. Create directories, migrate, seed, run the shared-connection storage executor with one worker, start io_context threads sized to `max(2, hardware_concurrency/2)` and join all executors on exit.
 
 `MenuServer` is the only target allowed to compose `MenuApi` and `MenuTransport`: `MenuApi` implements the injected handler and links only `MenuTransportCore`, `MenuTransport` owns the listener, and neither target may include the other's concrete implementation headers. The client cache contract stores all recipe ingredient display fields so offline pages do not make a second request.
 
@@ -525,7 +525,7 @@ git diff --check
 Record the actual PID, status codes, JSON bodies, database path, and stop only that PID. Then commit:
 
 ```powershell
-git add server config tests/integration
+git add server config tests/Integration
 git commit -m "feat: expose recipe and tonight recommendation api"
 ```
 

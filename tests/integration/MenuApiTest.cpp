@@ -1,27 +1,8 @@
 #include <gtest/gtest.h>
 
-#include <Api/ApiRouter.hpp>
-#include <Application/AdminRecipeApplicationService.hpp>
-#include <Application/AdminIngredientApplicationService.hpp>
-#include <Application/CookingSessionApplicationService.hpp>
-#include <Application/FeedbackApplicationService.hpp>
-#include <Application/MealPlanApplicationService.hpp>
-#include <Application/RecipeApplicationService.hpp>
-#include <Application/RuleBasedRecommendationProvider.hpp>
-#include <Application/StorageExecutor.hpp>
-#include <Infrastructure/MigrationRunner.hpp>
-#include <Infrastructure/SeedData.hpp>
-#include <Infrastructure/SqliteAuthRepository.hpp>
-#include <Infrastructure/SqliteAuthService.hpp>
-#include <Infrastructure/SqliteAdminRecipeRepository.hpp>
-#include <Infrastructure/SqliteAdminIngredientRepository.hpp>
-#include <Infrastructure/SqliteCookingSessionRepository.hpp>
-#include <Infrastructure/SqliteFeedbackRepository.hpp>
-#include <Infrastructure/SqliteIngredientRepository.hpp>
-#include <Infrastructure/SqliteMealPlanRepository.hpp>
-#include <Infrastructure/SqliteRecipeRepository.hpp>
-#include <TestFixtures/DatabaseFixtures.hpp>
-#include <Transport/HttpServer.hpp>
+#include <Application/AuthService.hpp>
+#include <Composition/ServerApplication.hpp>
+#include <Runtime/ServerConfiguration.hpp>
 
 #include <boost/asio/connect.hpp>
 #include <boost/asio/io_context.hpp>
@@ -31,6 +12,8 @@
 #include <boost/json/parse.hpp>
 
 #include <memory>
+#include <chrono>
+#include <filesystem>
 #include <ranges>
 #include <string>
 #include <string_view>
@@ -42,75 +25,36 @@ namespace {
 class ApiTestFixture : public ::testing::Test {
 protected:
     void SetUp() override {
-        Database = std::make_unique<Menu::Tests::DatabaseFixtures::TemporaryDatabase>(
-            Menu::Tests::DatabaseFixtures::OpenTemporary());
-        ASSERT_TRUE(Menu::Infrastructure::MigrationRunner::Apply(*Database).HasValue());
-        ASSERT_TRUE(Menu::Infrastructure::SeedData::InsertIfEmpty(*Database).HasValue());
+        const auto Suffix = std::to_string(
+            std::chrono::steady_clock::now().time_since_epoch().count());
+        Root = std::filesystem::current_path() / ("MenuApiTest-" + Suffix);
+        Menu::Runtime::ServerConfiguration Configuration;
+        Configuration.Http.Address = "127.0.0.1";
+        Configuration.Http.Port = 0;
+        Configuration.CorsOrigins = {"https://admin.menu.local"};
+        Configuration.DatabasePath = Root / "Data" / "menu.db";
+        Configuration.MediaDirectory = Root / "Media";
 
-        Repository = std::make_unique<Menu::Infrastructure::SqliteRecipeRepository>(*Database);
-        IngredientStore = std::make_unique<Menu::Infrastructure::SqliteIngredientRepository>(*Database);
-        Service = std::make_unique<Menu::Application::RecipeApplicationService>(
-            std::move(Repository),
-            std::make_unique<Menu::Application::RuleBasedRecommendationProvider>(),
-            std::move(IngredientStore));
-        AuthService = std::make_unique<Menu::Infrastructure::SqliteAuthService>(
-            std::make_unique<Menu::Infrastructure::SqliteAuthRepository>(*Database));
-        AdminService = std::make_unique<Menu::Application::AdminRecipeApplicationService>(
-            std::make_unique<Menu::Infrastructure::SqliteAdminRecipeRepository>(*Database));
-        AdminIngredientService =
-            std::make_unique<Menu::Application::AdminIngredientApplicationService>(
-                std::make_unique<Menu::Infrastructure::SqliteAdminIngredientRepository>(*Database));
-        MealPlanService = std::make_unique<Menu::Application::MealPlanApplicationService>(
-            std::make_unique<Menu::Infrastructure::SqliteMealPlanRepository>(*Database));
-        CookingSessionService =
-            std::make_unique<Menu::Application::CookingSessionApplicationService>(
-                std::make_unique<Menu::Infrastructure::SqliteCookingSessionRepository>(*Database));
-        FeedbackService = std::make_unique<Menu::Application::FeedbackApplicationService>(
-            std::make_unique<Menu::Infrastructure::SqliteFeedbackRepository>(*Database));
-        Storage = std::make_unique<Menu::Application::StorageExecutor>(2);
-        Router = std::make_unique<Menu::Api::ApiRouter>(
-            *Service,
-            *Storage,
-            AuthService.get(),
-            AdminService.get(),
-            std::vector<std::string>{"https://admin.menu.local"},
-            AdminIngredientService.get(),
-            MealPlanService.get(),
-            CookingSessionService.get(),
-            FeedbackService.get());
-        Router->SetReady(true);
-
-        Menu::Transport::HttpServerOptions Options;
-        Options.Port = 0;
-        Server = std::make_unique<Menu::Transport::HttpServer>(IoContext, Options);
-        const auto StartResult = Server->Start(
-            [this](Menu::Transport::HttpRequest Request,
-                   Menu::Transport::HttpResponseCallback Complete) {
-                Router->Handle(std::move(Request), std::move(Complete));
-            });
-        ASSERT_TRUE(StartResult.HasValue());
-        IoThread = std::thread([this]() {
-            IoContext.run();
-        });
+        auto ApplicationResult = Menu::Server::ServerApplication::Create(
+            std::move(Configuration));
+        ASSERT_TRUE(ApplicationResult.HasValue())
+            << ApplicationResult.ErrorValue().MessageValue();
+        Application = std::move(ApplicationResult).Value();
+        ASSERT_TRUE(Application->Start().HasValue());
+        IoThread = std::thread([this]() { Application->IoContext().run(); });
     }
 
     void TearDown() override {
-        if (Server) {
-            Server->Stop();
+        if (Application) {
+            Application->Stop();
+            Application->IoContext().stop();
         }
-        if (Storage) {
-            Storage->Shutdown();
-        }
-        IoContext.stop();
         if (IoThread.joinable()) {
             IoThread.join();
         }
-        Router.reset();
-        FeedbackService.reset();
-        CookingSessionService.reset();
-        MealPlanService.reset();
-        Service.reset();
-        Database.reset();
+        Application.reset();
+        std::error_code Error;
+        std::filesystem::remove_all(Root, Error);
     }
 
     [[nodiscard]] boost::beast::http::response<boost::beast::http::string_body> Request(
@@ -123,7 +67,7 @@ protected:
         std::string RequestedHeaders = {}) const {
         boost::asio::io_context ClientContext;
         boost::asio::ip::tcp::socket Socket(ClientContext);
-        Socket.connect({boost::asio::ip::make_address("127.0.0.1"), Server->LocalPort()});
+        Socket.connect({boost::asio::ip::make_address("127.0.0.1"), Application->LocalPort()});
         boost::beast::http::request<boost::beast::http::string_body> RequestValue(
             Method, Target, 11);
         RequestValue.set(boost::beast::http::field::host, "localhost");
@@ -159,21 +103,9 @@ protected:
         return Value;
     }
 
-    boost::asio::io_context IoContext;
     std::thread IoThread;
-    std::unique_ptr<Menu::Tests::DatabaseFixtures::TemporaryDatabase> Database;
-    std::unique_ptr<Menu::Infrastructure::SqliteRecipeRepository> Repository;
-    std::unique_ptr<Menu::Infrastructure::SqliteIngredientRepository> IngredientStore;
-    std::unique_ptr<Menu::Application::RecipeApplicationService> Service;
-    std::unique_ptr<Menu::Infrastructure::SqliteAuthService> AuthService;
-    std::unique_ptr<Menu::Application::AdminRecipeApplicationService> AdminService;
-    std::unique_ptr<Menu::Application::AdminIngredientApplicationService> AdminIngredientService;
-    std::unique_ptr<Menu::Application::MealPlanApplicationService> MealPlanService;
-    std::unique_ptr<Menu::Application::CookingSessionApplicationService> CookingSessionService;
-    std::unique_ptr<Menu::Application::FeedbackApplicationService> FeedbackService;
-    std::unique_ptr<Menu::Application::StorageExecutor> Storage;
-    std::unique_ptr<Menu::Api::ApiRouter> Router;
-    std::unique_ptr<Menu::Transport::HttpServer> Server;
+    std::filesystem::path Root;
+    std::unique_ptr<Menu::Server::ServerApplication> Application;
 };
 
 }  // namespace
@@ -250,12 +182,24 @@ TEST_F(ApiTestFixture, RejectsInvalidQueryAndRecommendationBody) {
               "invalid_body");
 }
 
+TEST_F(ApiTestFixture, RejectsRecommendationBodyWithMissingRequiredArrays) {
+    const auto Response = Request(
+        boost::beast::http::verb::post,
+        "/api/v1/recommendations/tonight",
+        "{\"servings\":2,\"availableMinutes\":30}");
+
+    ASSERT_EQ(static_cast<int>(Response.result()), 400) << Response.body();
+    EXPECT_EQ(ParseJson(Response.body()).as_object().at("error").as_object().at("code").as_string(),
+              "invalid_body");
+}
+
 TEST_F(ApiTestFixture, ReturnsAtMostThreeTonightRecommendations) {
     const auto Response = Request(
         boost::beast::http::verb::post,
         "/api/v1/recommendations/tonight",
         "{\"servings\":2,\"availableMinutes\":35,\"cuisines\":[\"中餐\"],"
-        "\"pantryIngredientIds\":[\"ingredient.rice\"],\"cookware\":[\"炒锅\"]}");
+        "\"allergies\":[],\"pantryIngredientIds\":[\"ingredient.rice\"],"
+        "\"cookware\":[\"炒锅\"],\"recentRecipeIds\":[]}");
 
     ASSERT_EQ(static_cast<int>(Response.result()), 200);
     const auto Recommendations = ParseJson(Response.body()).as_array();
@@ -341,7 +285,7 @@ TEST_F(ApiTestFixture, RejectsInvalidLoginWithoutRevealingAccountState) {
               "authentication_failed");
 }
 
-TEST_F(ApiTestFixture, RejectsOversizedLoginPasswordWithUnauthorizedStatus) {
+TEST_F(ApiTestFixture, RejectsOversizedLoginPasswordAtApiBoundary) {
     const auto Registered = Request(
         boost::beast::http::verb::post,
         "/api/v1/auth/register",
@@ -350,7 +294,8 @@ TEST_F(ApiTestFixture, RejectsOversizedLoginPasswordWithUnauthorizedStatus) {
     ASSERT_EQ(static_cast<int>(Registered.result()), 201);
 
     const std::string LongPassword(129, 'x');
-    const auto DirectResult = AuthService->Login("bounded@example.com", LongPassword);
+    const auto DirectResult = Application->Authentication().Login(
+        "bounded@example.com", LongPassword);
     ASSERT_FALSE(DirectResult.HasValue());
     EXPECT_EQ(DirectResult.ErrorValue().CodeValue(),
               Menu::Foundation::ErrorCode::AuthenticationFailed);
@@ -359,9 +304,9 @@ TEST_F(ApiTestFixture, RejectsOversizedLoginPasswordWithUnauthorizedStatus) {
         "/api/v1/auth/login",
         "{\"email\":\"bounded@example.com\",\"password\":\"" + LongPassword + "\"}");
 
-    ASSERT_EQ(static_cast<int>(Response.result()), 401) << Response.body();
+    ASSERT_EQ(static_cast<int>(Response.result()), 400) << Response.body();
     EXPECT_EQ(ParseJson(Response.body()).as_object().at("error").as_object().at("code").as_string(),
-              "authentication_failed");
+              "invalid_body");
 }
 
 TEST_F(ApiTestFixture, RejectsWhitespaceAndControlCharactersInDisplayName) {

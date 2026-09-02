@@ -42,9 +42,11 @@ function(AssertMenuTargetBoundaries)
         MenuDomain
         MenuApplication
         MenuInfrastructure
+        MenuRuntime
         MenuTransportCore
         MenuTransport
         MenuApi
+        MenuComposition
         MenuServer
     )
 
@@ -90,17 +92,40 @@ function(AssertMenuTargetBoundaries)
             "MenuApi must consume MenuTransportCore: ${ApiClosure}")
     endif()
 
+    CollectMenuTargetClosure(MenuRuntime RuntimeClosure)
+    foreach(ForbiddenRuntimeDependency IN ITEMS
+            MenuApi MenuApplication MenuInfrastructure MenuTransport)
+        list(FIND RuntimeClosure "${ForbiddenRuntimeDependency}" RuntimeDependencyIndex)
+        if(NOT RuntimeDependencyIndex EQUAL -1)
+            message(FATAL_ERROR
+                "MenuRuntime must not depend on ${ForbiddenRuntimeDependency}: ${RuntimeClosure}")
+        endif()
+    endforeach()
+
+    file(GLOB_RECURSE RuntimeSources
+        "${PROJECT_SOURCE_DIR}/server/Runtime/*.cpp"
+        "${PROJECT_SOURCE_DIR}/server/Runtime/*.hpp")
+    foreach(RuntimeSource IN LISTS RuntimeSources)
+        file(READ "${RuntimeSource}" RuntimeSourceText)
+        if(RuntimeSourceText MATCHES "#[ \\t]*include[ \\t]*[<\"](Api|Application|Infrastructure)/")
+            message(FATAL_ERROR
+                "MenuRuntime source must not include a business or storage module: ${RuntimeSource}")
+        endif()
+    endforeach()
+
     CollectMenuTargetClosure(MenuServer ServerClosure)
-    list(FIND ServerClosure MenuApi ServerApi)
-    list(FIND ServerClosure MenuTransport ServerTransport)
-    if(ServerApi EQUAL -1 OR ServerTransport EQUAL -1)
+    list(FIND ServerClosure MenuComposition ServerComposition)
+    if(ServerComposition EQUAL -1)
         message(FATAL_ERROR
-            "MenuServer must compose MenuApi and MenuTransport: ${ServerClosure}")
+            "MenuServer must compose MenuComposition: ${ServerClosure}")
     endif()
 
     message(STATUS "Menu target boundary check passed")
     message(STATUS "MenuTransportCore closure: ${TransportCoreClosure}")
     message(STATUS "MenuTransport closure: ${TransportClosure}")
     message(STATUS "MenuApi closure: ${ApiClosure}")
+    message(STATUS "MenuRuntime closure: ${RuntimeClosure}")
+    CollectMenuTargetClosure(MenuComposition CompositionClosure)
+    message(STATUS "MenuComposition closure: ${CompositionClosure}")
     message(STATUS "MenuServer closure: ${ServerClosure}")
 endfunction()

@@ -1,4 +1,5 @@
 add_library(MenuApi STATIC
+    ApiDependencies.hpp
     AdminRoutes.cpp
     ApiErrors.cpp
     ApiMiddleware.cpp

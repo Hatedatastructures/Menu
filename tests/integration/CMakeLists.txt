@@ -1,6 +1,6 @@
 add_executable(MenuTransportIntegrationTests
     "${PROJECT_SOURCE_DIR}/tests/TestMain.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/integration/HttpTransportTest.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/Integration/HttpTransportTest.cpp"
 )
 target_include_directories(MenuTransportIntegrationTests PRIVATE
     "${PROJECT_SOURCE_DIR}/server"
@@ -19,7 +19,7 @@ gtest_discover_tests(MenuTransportIntegrationTests
 
 add_executable(MenuApiIntegrationTests
     "${PROJECT_SOURCE_DIR}/tests/TestMain.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/integration/MenuApiTest.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/Integration/MenuApiTest.cpp"
 )
 target_include_directories(MenuApiIntegrationTests PRIVATE
     "${PROJECT_SOURCE_DIR}/server"
@@ -27,9 +27,7 @@ target_include_directories(MenuApiIntegrationTests PRIVATE
 )
 target_link_libraries(MenuApiIntegrationTests PRIVATE
     GTest::gtest
-    MenuApi
-    MenuInfrastructure
-    MenuTransport
+    MenuComposition
 )
 target_compile_features(MenuApiIntegrationTests PRIVATE cxx_std_20)
 gtest_discover_tests(MenuApiIntegrationTests

@@ -1,28 +1,28 @@
 [  0%] Built target MenuClientCore_autogen_timestamp_deps
-[  1%] Built target MenuAndroid_copy_res
-[  2%] Built target MenuAndroid_copy_qml
-[  4%] Built target MenuAndroid_qmlimportscan
+[  1%] Built target MenuClientApp_copy_res
+[  2%] Built target MenuClientApp_copy_qml
+[  4%] Built target MenuClientApp_qmlimportscan
 [  4%] Built target MenuClientQmlTests_autogen_timestamp_deps
 [  5%] Automatic MOC and UIC for target MenuClientCore
 [  6%] Built target MenuClientQmlTests_autogen
 [ 11%] Built target MenuClientQmlTests
 [ 11%] Built target MenuClientCore_autogen
 [ 29%] Built target MenuClientCore
-[ 29%] Built target MenuAndroid_autogen_timestamp_deps
+[ 29%] Built target MenuClientApp_autogen_timestamp_deps
 [ 29%] Built target MenuClientModelTests_autogen_timestamp_deps
 [ 29%] Built target MenuClientApiTests_autogen_timestamp_deps
 [ 29%] Built target MenuClientPlanModelTests_autogen_timestamp_deps
-[ 30%] Automatic MOC and UIC for target MenuAndroid
+[ 30%] Automatic MOC and UIC for target MenuClientApp
 [ 31%] Built target MenuClientModelTests_autogen
 [ 33%] Built target MenuClientApiTests_autogen
-[ 33%] Built target MenuAndroid_autogen
+[ 33%] Built target MenuClientApp_autogen
 [ 34%] Built target MenuClientPlanModelTests_autogen
 [ 36%] Linking CXX executable MenuClientModelTests.exe
 [ 40%] Built target MenuClientApiTests
 [ 41%] Linking CXX executable MenuClientPlanModelTests.exe
 [ 44%] Built target MenuClientModelTests
-[ 45%] Running AUTOMOC file extraction for target MenuAndroid
+[ 45%] Running AUTOMOC file extraction for target MenuClientApp
 [ 48%] Built target MenuClientPlanModelTests
-[ 48%] Running AUTOMOC file extraction for target MenuAndroid
+[ 48%] Running AUTOMOC file extraction for target MenuClientApp
 [ 50%] Linking CXX executable MenuClient.exe
-[100%] Built target MenuAndroid
+[100%] Built target MenuClientApp

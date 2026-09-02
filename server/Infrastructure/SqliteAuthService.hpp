@@ -26,9 +26,6 @@ public:
         std::string_view AccessToken) override;
 
 private:
-    Foundation::Result<Application::AuthResponse> IssueTokens(
-        Application::AuthUser User);
-
     std::unique_ptr<Application::AuthRepository> Repository;
 };
 

@@ -13,6 +13,7 @@ namespace Menu::Infrastructure::SqliteWorkflowSupport {
 
 class StatementGuard final {
 public:
+    StatementGuard() = default;
     explicit StatementGuard(sqlite3_stmt* StatementValue);
     StatementGuard(const StatementGuard&) = delete;
     StatementGuard& operator=(const StatementGuard&) = delete;
@@ -41,6 +42,16 @@ Foundation::Result<void> BindInteger(
     sqlite3_stmt* Statement,
     int Index,
     std::int64_t Value);
+
+Foundation::Result<void> BindInt(
+    sqlite3_stmt* Statement,
+    int Index,
+    int Value);
+
+Foundation::Result<void> BindDouble(
+    sqlite3_stmt* Statement,
+    int Index,
+    double Value);
 
 std::string ColumnText(sqlite3_stmt* Statement, int Column);
 

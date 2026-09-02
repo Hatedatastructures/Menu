@@ -22,7 +22,6 @@ public:
 
 private:
     Foundation::Result<Domain::MealPlan> ReadPlan(std::string_view PlanId);
-    Foundation::Result<std::string> FindRecipeName(std::string_view RecipeId);
 
     SqliteDatabase& Database;
 };

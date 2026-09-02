@@ -23,7 +23,7 @@ Foundation::Result<Domain::Feedback> FeedbackApplicationService::Create(
     std::string Comment) {
     if (!Repository || UserId.empty() || RecipeId.empty() || RecipeId.size() > 128U ||
         (Outcome != "made" && Outcome != "skipped") || Tags.size() > 8U ||
-        Comment.size() > 2000U) {
+        Comment.size() > 1000U) {
         return Foundation::Result<Domain::Feedback>::FromError(
             InvalidFeedback("反馈信息无效"));
     }

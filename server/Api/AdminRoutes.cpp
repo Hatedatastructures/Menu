@@ -25,11 +25,8 @@ std::optional<Transport::HttpResponse> Route(
         if (!UserResult.HasValue()) {
             return Middleware::AdminError(UserResult.ErrorValue(), RequestId);
         }
-        if (Context.AdminService == nullptr || Context.AdminIngredientService == nullptr) {
-            return ApiErrors::Create(503, "admin_unavailable", "管理服务暂时不可用", RequestId);
-        }
-        const auto RecipesResult = Context.AdminService->ListAllRecipes();
-        const auto IngredientsResult = Context.AdminIngredientService->ListAll();
+        const auto RecipesResult = Context.AdminService.ListAllRecipes();
+        const auto IngredientsResult = Context.AdminIngredientService.ListAll();
         if (!RecipesResult.HasValue() || !IngredientsResult.HasValue()) {
             return Middleware::InternalError(RequestId);
         }
@@ -54,15 +51,12 @@ std::optional<Transport::HttpResponse> Route(
     }
 
     if (IsRecipePath) {
-        if (Context.AdminService == nullptr) {
-            return ApiErrors::Create(503, "admin_unavailable", "管理服务暂时不可用", RequestId);
-        }
         const auto UserResult = Middleware::RequireAdmin(Context.Authentication, Request);
         if (!UserResult.HasValue()) {
             return Middleware::AdminError(UserResult.ErrorValue(), RequestId);
         }
         if (Request.Method == "GET" && Target.Path == RecipePrefix) {
-            const auto Result = Context.AdminService->ListAllRecipes();
+            const auto Result = Context.AdminService.ListAllRecipes();
             if (!Result.HasValue()) {
                 return Middleware::AdminError(Result.ErrorValue(), RequestId);
             }
@@ -74,7 +68,7 @@ std::optional<Transport::HttpResponse> Route(
             if (!Payload.HasValue()) {
                 return ApiErrors::Create(400, "invalid_body", "请求内容无效", RequestId);
             }
-            const auto Result = Context.AdminService->CreateRecipe(Payload.Value());
+            const auto Result = Context.AdminService.CreateRecipe(Payload.Value());
             if (!Result.HasValue()) {
                 return Middleware::AdminError(Result.ErrorValue(), RequestId);
             }
@@ -93,7 +87,7 @@ std::optional<Transport::HttpResponse> Route(
             if (!Payload.HasValue()) {
                 return ApiErrors::Create(400, "invalid_body", "请求内容无效", RequestId);
             }
-            const auto Result = Context.AdminService->UpdateRecipe(RecipeId, Payload.Value());
+            const auto Result = Context.AdminService.UpdateRecipe(RecipeId, Payload.Value());
             if (!Result.HasValue()) {
                 return Middleware::AdminError(Result.ErrorValue(), RequestId);
             }
@@ -101,7 +95,7 @@ std::optional<Transport::HttpResponse> Route(
                 200, RecipeDtos::ToObject(Result.Value()), RequestId);
         }
         if (Request.Method == "DELETE") {
-            const auto Result = Context.AdminService->DeleteRecipe(RecipeId);
+            const auto Result = Context.AdminService.DeleteRecipe(RecipeId);
             if (!Result.HasValue()) {
                 return Middleware::AdminError(Result.ErrorValue(), RequestId);
             }
@@ -116,15 +110,12 @@ std::optional<Transport::HttpResponse> Route(
     }
 
     if (IsIngredientPath) {
-        if (Context.AdminIngredientService == nullptr) {
-            return ApiErrors::Create(503, "admin_unavailable", "管理服务暂时不可用", RequestId);
-        }
         const auto UserResult = Middleware::RequireAdmin(Context.Authentication, Request);
         if (!UserResult.HasValue()) {
             return Middleware::AdminError(UserResult.ErrorValue(), RequestId);
         }
         if (Request.Method == "GET" && Target.Path == IngredientPrefix) {
-            const auto Result = Context.AdminIngredientService->ListAll();
+            const auto Result = Context.AdminIngredientService.ListAll();
             if (!Result.HasValue()) {
                 return Middleware::AdminError(Result.ErrorValue(), RequestId);
             }
@@ -136,7 +127,7 @@ std::optional<Transport::HttpResponse> Route(
             if (!Payload.HasValue()) {
                 return ApiErrors::Create(400, "invalid_body", "请求内容无效", RequestId);
             }
-            const auto Result = Context.AdminIngredientService->Create(Payload.Value());
+            const auto Result = Context.AdminIngredientService.Create(Payload.Value());
             if (!Result.HasValue()) {
                 return Middleware::AdminError(Result.ErrorValue(), RequestId);
             }
@@ -155,7 +146,7 @@ std::optional<Transport::HttpResponse> Route(
             if (!Payload.HasValue()) {
                 return ApiErrors::Create(400, "invalid_body", "请求内容无效", RequestId);
             }
-            const auto Result = Context.AdminIngredientService->Update(
+            const auto Result = Context.AdminIngredientService.Update(
                 IngredientId, Payload.Value());
             if (!Result.HasValue()) {
                 return Middleware::AdminError(Result.ErrorValue(), RequestId);
@@ -164,7 +155,7 @@ std::optional<Transport::HttpResponse> Route(
                 200, RecipeDtos::ToObject(Result.Value()), RequestId);
         }
         if (Request.Method == "DELETE") {
-            const auto Result = Context.AdminIngredientService->Delete(IngredientId);
+            const auto Result = Context.AdminIngredientService.Delete(IngredientId);
             if (!Result.HasValue()) {
                 return Middleware::AdminError(Result.ErrorValue(), RequestId);
             }

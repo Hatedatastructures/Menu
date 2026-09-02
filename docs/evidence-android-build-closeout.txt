@@ -1,5 +1,5 @@
 === CMake Android apk target ===
-[1/1] Copying MenuAndroid binary to apk folder
+[1/1] Copying MenuClientApp binary to apk folder
 AndroidCMakeBuildExit=0
 === Gradle assembleDebug ===
 Starting a Gradle Daemon (subsequent builds will be faster)

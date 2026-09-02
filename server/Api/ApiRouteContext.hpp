@@ -12,12 +12,12 @@ namespace Menu::Api {
 
 struct ApiRouteContext {
     Application::RecipeApplicationService& Service;
-    Application::AuthService* Authentication = nullptr;
-    Application::AdminRecipeApplicationService* AdminService = nullptr;
-    Application::AdminIngredientApplicationService* AdminIngredientService = nullptr;
-    Application::MealPlanApplicationService* MealPlans = nullptr;
-    Application::CookingSessionApplicationService* CookingSessions = nullptr;
-    Application::FeedbackApplicationService* Feedbacks = nullptr;
+    Application::AuthService& Authentication;
+    Application::AdminRecipeApplicationService& AdminService;
+    Application::AdminIngredientApplicationService& AdminIngredientService;
+    Application::MealPlanApplicationService& MealPlans;
+    Application::CookingSessionApplicationService& CookingSessions;
+    Application::FeedbackApplicationService& Feedbacks;
 };
 
 }  // namespace Menu::Api

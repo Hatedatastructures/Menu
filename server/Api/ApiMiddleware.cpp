@@ -142,19 +142,15 @@ Transport::HttpResponse WorkflowError(
 }
 
 Foundation::Result<Application::AuthUser> RequireUser(
-    Application::AuthService* Authentication,
+    Application::AuthService& Authentication,
     const Transport::HttpRequest& Request) {
-    if (Authentication == nullptr) {
-        return Foundation::Result<Application::AuthUser>::FromError(
-            Foundation::Error(Foundation::ErrorCode::StorageUnavailable, "认证服务不可用"));
-    }
     const std::string Authorization = Request.HeaderValue("Authorization");
     constexpr std::string_view Prefix = "Bearer ";
     if (!Authorization.starts_with(Prefix) || Authorization.size() == Prefix.size()) {
         return Foundation::Result<Application::AuthUser>::FromError(
             Foundation::Error(Foundation::ErrorCode::AuthenticationFailed, "需要认证"));
     }
-    const auto UserResult = Authentication->Authenticate(
+    const auto UserResult = Authentication.Authenticate(
         std::string_view(Authorization).substr(Prefix.size()));
     if (!UserResult.HasValue()) {
         return UserResult;
@@ -163,7 +159,7 @@ Foundation::Result<Application::AuthUser> RequireUser(
 }
 
 Foundation::Result<Application::AuthUser> RequireAdmin(
-    Application::AuthService* Authentication,
+    Application::AuthService& Authentication,
     const Transport::HttpRequest& Request) {
     const auto UserResult = RequireUser(Authentication, Request);
     if (!UserResult.HasValue()) {

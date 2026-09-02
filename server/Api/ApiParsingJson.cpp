@@ -82,7 +82,8 @@ Foundation::Result<std::vector<std::string>> ReadJsonStringArray(
     std::string_view Key) {
     const boost::json::value* Value = Object.if_contains(Key);
     if (Value == nullptr) {
-        return std::vector<std::string>();
+        return Foundation::Result<std::vector<std::string>>::FromError(
+            Support::InvalidRequest("请求数组字段缺失"));
     }
     if (!Value->is_array() || Value->as_array().size() > 64U) {
         return Foundation::Result<std::vector<std::string>>::FromError(

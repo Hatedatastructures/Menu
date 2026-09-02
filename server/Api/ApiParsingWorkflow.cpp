@@ -135,14 +135,12 @@ Foundation::Result<FeedbackPayload> ReadFeedbackPayload(std::string_view Body) {
     Payload.RecipeId = RecipeId.Value();
     Payload.Outcome = Outcome.Value();
     Payload.Tags = Tags.Value();
-    if (const boost::json::value* Comment = Parsed.as_object().if_contains("comment");
-        Comment != nullptr) {
-        if (!Comment->is_string() || Comment->as_string().size() > 2000U) {
-            return Foundation::Result<FeedbackPayload>::FromError(
-                Support::InvalidRequest("反馈评论无效"));
-        }
-        Payload.Comment = std::string(Comment->as_string().c_str());
+    const boost::json::value* Comment = Parsed.as_object().if_contains("comment");
+    if (Comment == nullptr || !Comment->is_string() || Comment->as_string().size() > 1000U) {
+        return Foundation::Result<FeedbackPayload>::FromError(
+            Support::InvalidRequest("反馈评论无效"));
     }
+    Payload.Comment = std::string(Comment->as_string().c_str());
     return Payload;
 }
 

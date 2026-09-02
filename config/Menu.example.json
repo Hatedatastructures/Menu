@@ -1,7 +1,7 @@
 {
   "address": "127.0.0.1",
   "port": 8080,
-  "databasePath": "server/data/menu.db",
+  "databasePath": "server/Data/menu.db",
   "mediaDirectory": "assets/media",
   "maxBodyBytes": 1048576,
   "maxTargetBytes": 8192,

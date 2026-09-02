@@ -10,6 +10,7 @@
 #include "Api/WorkflowRoutes.hpp"
 
 #include <boost/asio/system_executor.hpp>
+#include <boost/asio/post.hpp>
 #include <boost/json/object.hpp>
 
 #include <atomic>
@@ -26,25 +27,19 @@ struct RouteState {
 
 }  // namespace
 
-ApiRouter::ApiRouter(
-    Application::RecipeApplicationService& ServiceValue,
-    Application::StorageExecutor& StorageValue,
-    Application::AuthService* AuthenticationValue,
-    Application::AdminRecipeApplicationService* AdminServiceValue,
-    std::vector<std::string> CorsOriginsValue,
-    Application::AdminIngredientApplicationService* AdminIngredientServiceValue,
-    Application::MealPlanApplicationService* MealPlanServiceValue,
-    Application::CookingSessionApplicationService* CookingSessionServiceValue,
-    Application::FeedbackApplicationService* FeedbackServiceValue)
-    : Service(ServiceValue),
-      Storage(StorageValue),
-      Authentication(AuthenticationValue),
-      AdminService(AdminServiceValue),
-      AdminIngredientService(AdminIngredientServiceValue),
-      MealPlans(MealPlanServiceValue),
-      CookingSessions(CookingSessionServiceValue),
-      Feedbacks(FeedbackServiceValue),
-      CorsOrigins(std::move(CorsOriginsValue)) {}
+ApiRouter::ApiRouter(ApiDependencies DependenciesValue)
+    : Service(DependenciesValue.Service),
+      Storage(DependenciesValue.Storage),
+      Authentication(DependenciesValue.Authentication),
+      AdminService(DependenciesValue.AdminService),
+      AdminIngredientService(DependenciesValue.AdminIngredientService),
+      MealPlans(DependenciesValue.MealPlans),
+      CookingSessions(DependenciesValue.CookingSessions),
+      Feedbacks(DependenciesValue.Feedbacks),
+      CorsOrigins(std::move(DependenciesValue.CorsOrigins)),
+      CompletionDispatcher([](std::function<void()> Handler) {
+          boost::asio::post(boost::asio::system_executor(), std::move(Handler));
+      }) {}
 
 void ApiRouter::Handle(
     Transport::HttpRequest RequestValue,
@@ -106,7 +101,7 @@ void ApiRouter::Handle(
             }
             Finish(std::move(State->Response).value());
         },
-        boost::asio::system_executor());
+        CompletionDispatcher);
     if (!Accepted) {
         Finish(Middleware::InternalError(Id));
     }
@@ -114,6 +109,13 @@ void ApiRouter::Handle(
 
 void ApiRouter::SetReady(bool ReadyValue) noexcept {
     Ready.store(ReadyValue, std::memory_order_release);
+}
+
+void ApiRouter::SetCompletionDispatcher(
+    Application::StorageExecutor::CompletionDispatcher DispatcherValue) {
+    if (DispatcherValue) {
+        CompletionDispatcher = std::move(DispatcherValue);
+    }
 }
 
 Transport::HttpResponse ApiRouter::Route(

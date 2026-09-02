@@ -1,9 +1,9 @@
 add_executable(MenuUnitTests
     "${PROJECT_SOURCE_DIR}/tests/TestMain.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/unit/BootstrapContractTest.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/unit/RecipeRulesTest.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/unit/RecommendationRulesTest.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/unit/PlanRulesTest.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/Unit/BootstrapContractTest.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/Unit/RecipeRulesTest.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/Unit/RecommendationRulesTest.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/Unit/PlanRulesTest.cpp"
 )
 target_include_directories(MenuUnitTests PRIVATE
     "${PROJECT_SOURCE_DIR}/server"
@@ -20,7 +20,7 @@ gtest_discover_tests(MenuUnitTests
 
 add_executable(MenuMigrationTests
     "${PROJECT_SOURCE_DIR}/tests/TestMain.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/unit/SqliteMigrationTest.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/Unit/SqliteMigrationTest.cpp"
 )
 target_include_directories(MenuMigrationTests PRIVATE
     "${PROJECT_SOURCE_DIR}/server"
@@ -35,7 +35,7 @@ gtest_discover_tests(MenuMigrationTests
 
 add_executable(MenuRecipeRepositoryTests
     "${PROJECT_SOURCE_DIR}/tests/TestMain.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/unit/SqliteRecipeRepositoryTest.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/Unit/SqliteRecipeRepositoryTest.cpp"
 )
 target_include_directories(MenuRecipeRepositoryTests PRIVATE
     "${PROJECT_SOURCE_DIR}/server"
@@ -50,8 +50,8 @@ gtest_discover_tests(MenuRecipeRepositoryTests
 
 add_executable(MenuApplicationTests
     "${PROJECT_SOURCE_DIR}/tests/TestMain.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/unit/RecipeApplicationServiceTest.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/unit/StorageExecutorTest.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/Unit/RecipeApplicationServiceTest.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/Unit/StorageExecutorTest.cpp"
 )
 target_include_directories(MenuApplicationTests PRIVATE
     "${PROJECT_SOURCE_DIR}/server"
@@ -64,15 +64,54 @@ gtest_discover_tests(MenuApplicationTests
     PROPERTIES TIMEOUT 30
 )
 
+add_executable(MenuRuntimeTests
+    "${PROJECT_SOURCE_DIR}/tests/TestMain.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/Unit/ServerConfigurationTest.cpp"
+)
+target_include_directories(MenuRuntimeTests PRIVATE
+    "${PROJECT_SOURCE_DIR}/server"
+    "${PROJECT_SOURCE_DIR}/tests"
+)
+target_link_libraries(MenuRuntimeTests PRIVATE GTest::gtest MenuRuntime)
+target_compile_features(MenuRuntimeTests PRIVATE cxx_std_20)
+gtest_discover_tests(MenuRuntimeTests
+    DISCOVERY_MODE PRE_TEST
+    PROPERTIES TIMEOUT 30
+)
+
+add_executable(MenuSeedCatalogTests
+    "${PROJECT_SOURCE_DIR}/tests/TestMain.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/Unit/SeedCatalogTest.cpp"
+)
+target_include_directories(MenuSeedCatalogTests PRIVATE "${PROJECT_SOURCE_DIR}/server")
+target_link_libraries(MenuSeedCatalogTests PRIVATE GTest::gtest MenuInfrastructure)
+target_compile_features(MenuSeedCatalogTests PRIVATE cxx_std_20)
+gtest_discover_tests(MenuSeedCatalogTests
+    DISCOVERY_MODE PRE_TEST
+    PROPERTIES TIMEOUT 30
+)
+
 add_executable(MenuAuthTests
     "${PROJECT_SOURCE_DIR}/tests/TestMain.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/unit/PasswordHasherTest.cpp"
-    "${PROJECT_SOURCE_DIR}/tests/unit/TokenServiceTest.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/Unit/PasswordHasherTest.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/Unit/TokenServiceTest.cpp"
 )
 target_include_directories(MenuAuthTests PRIVATE "${PROJECT_SOURCE_DIR}/server")
 target_link_libraries(MenuAuthTests PRIVATE GTest::gtest MenuInfrastructure)
 target_compile_features(MenuAuthTests PRIVATE cxx_std_20)
 gtest_discover_tests(MenuAuthTests
+    DISCOVERY_MODE PRE_TEST
+    PROPERTIES TIMEOUT 30
+)
+
+add_executable(MenuCompositionTests
+    "${PROJECT_SOURCE_DIR}/tests/TestMain.cpp"
+    "${PROJECT_SOURCE_DIR}/tests/Unit/ServerApplicationTest.cpp"
+)
+target_include_directories(MenuCompositionTests PRIVATE "${PROJECT_SOURCE_DIR}/server")
+target_link_libraries(MenuCompositionTests PRIVATE GTest::gtest MenuComposition)
+target_compile_features(MenuCompositionTests PRIVATE cxx_std_20)
+gtest_discover_tests(MenuCompositionTests
     DISCOVERY_MODE PRE_TEST
     PROPERTIES TIMEOUT 30
 )
