@@ -27,3 +27,69 @@ Thumbs.db
 /artifacts/
 /test-results/
 /coverage/
+
+# Go 构建产物
+/tmp/
+/log/
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# 日志文件
+*.log
+
+# IDE 设置
+.vscode/
+.idea/
+
+# 环境变量、配置
+
+# 测试覆盖率文件
+*.out
+
+# 依赖缓存
+vendor/
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# 临时文件
+tmp/
+*.tmp
+*.bak
+*.swp
+*.swo
+*.zip
+*.rar
+*.7z
+*.tar
+*.tar.gz
+*.tar.bz2
+*.tar.xz
+*.tar.zst
+*.tar.lz4
+*.tar.lzma
+*.tar.z
+*.tar.Z
+*.exe
+
+# md
+/md/
+
+# Makefile 相关
+build/
+release/
+.air.toml
+build-errors.log
+
+
+web/node_modules/*
+server/log/*
+
+
+server/temp_build
+server/main.exe
+server/*.exe

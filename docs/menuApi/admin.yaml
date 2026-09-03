@@ -1,0 +1,271 @@
+# 管理后台模块
+# 对应 C++ server AdminRoutes
+# 所有接口需要管理员权限(Bearer Token + isAdmin)
+
+# 获取管理后台统计
+GetAdminStats:
+  method: GET
+  path: /api/v1/admin/stats
+  package: menu
+  filename: admin
+  permission: true
+  res:
+    publishedRecipes: int # 已发布菜谱数
+    draftRecipes: int # 草稿菜谱数
+    archivedRecipes: int # 已归档菜谱数
+    ingredientCount: int # 食材总数
+
+# 获取全部菜谱(含所有状态)
+ListAllRecipes:
+  method: GET
+  path: /api/v1/admin/recipes
+  package: menu
+  filename: admin
+  permission: true
+  res:
+    - id: string # 菜谱ID
+      slug: string # 菜谱别名
+      name: string # 菜谱名称
+      cuisine: string # 菜系
+      description: string # 描述
+      prepMinutes: int # 准备时间(分钟)
+      cookMinutes: int # 烹饪时间(分钟)
+      totalMinutes: int # 总时间(分钟)
+      servings: int # 份数
+      difficulty: int # 难度(1-5)
+      imagePath: string # 图片路径
+      status: string # 状态:published/draft/archived
+      allergens: [string] # 过敏原列表
+      cookware: [string] # 所需厨具
+      ingredients:
+        - ingredientId: string # 食材ID
+          quantity: float64 # 用量
+          unit: string # 单位
+          required: bool # 是否必需
+          servingFactor: float64 # 份数系数
+          preparation: string # 处理方式
+          ingredientName: string # 食材名称
+          category: string # 食材分类
+          defaultUnit: string # 默认单位
+          isPantryStaple: bool # 是否常备食材
+      steps:
+        - stepOrder: int # 步骤序号
+          title: string # 步骤标题
+          instruction: string # 操作说明
+          durationSeconds: int # 持续时间(秒)
+          hasTimer: bool # 是否需要计时
+
+# 创建菜谱
+CreateRecipe:
+  method: POST
+  path: /api/v1/admin/recipes
+  package: menu
+  filename: admin
+  permission: true
+  req:
+    slug: string # 菜谱别名
+    name: string %min(1),max(128) # 菜谱名称
+    cuisine: string # 菜系
+    description: string # 描述
+    prepMinutes: int # 准备时间(分钟)
+    cookMinutes: int # 烹饪时间(分钟)
+    servings: int %gte(1) # 份数
+    difficulty: int %gte(1),lte(5) # 难度(1-5)
+    imagePath: string # 图片路径
+    status: string %enum(published,draft,archived) # 状态
+    allergens: [string] # 过敏原列表
+    cookware: [string] # 所需厨具
+    ingredients:
+      - ingredientId: string # 食材ID
+        quantity: float64 # 用量
+        unit: string # 单位
+        required: bool # 是否必需
+        servingFactor: float64 # 份数系数
+        preparation: string # 处理方式
+    steps:
+      - stepOrder: int # 步骤序号
+        title: string # 步骤标题
+        instruction: string # 操作说明
+        durationSeconds: int # 持续时间(秒)
+        hasTimer: bool # 是否需要计时
+  res:
+    id: string # 菜谱ID
+    slug: string
+    name: string
+    cuisine: string
+    description: string
+    prepMinutes: int
+    cookMinutes: int
+    totalMinutes: int
+    servings: int
+    difficulty: int
+    imagePath: string
+    status: string
+    allergens: [string]
+    cookware: [string]
+    ingredients:
+      - ingredientId: string
+        quantity: float64
+        unit: string
+        required: bool
+        servingFactor: float64
+        preparation: string
+        ingredientName: string
+        category: string
+        defaultUnit: string
+        isPantryStaple: bool
+    steps:
+      - stepOrder: int
+        title: string
+        instruction: string
+        durationSeconds: int
+        hasTimer: bool
+
+# 更新菜谱
+UpdateRecipe:
+  method: PUT
+  path: /api/v1/admin/recipes/:id
+  package: menu
+  filename: admin
+  permission: true
+  req:
+    slug: string
+    name: string
+    cuisine: string
+    description: string
+    prepMinutes: int
+    cookMinutes: int
+    servings: int
+    difficulty: int
+    imagePath: string
+    status: string
+    allergens: [string]
+    cookware: [string]
+    ingredients:
+      - ingredientId: string
+        quantity: float64
+        unit: string
+        required: bool
+        servingFactor: float64
+        preparation: string
+    steps:
+      - stepOrder: int
+        title: string
+        instruction: string
+        durationSeconds: int
+        hasTimer: bool
+  res:
+    id: string
+    slug: string
+    name: string
+    cuisine: string
+    description: string
+    prepMinutes: int
+    cookMinutes: int
+    totalMinutes: int
+    servings: int
+    difficulty: int
+    imagePath: string
+    status: string
+    allergens: [string]
+    cookware: [string]
+    ingredients:
+      - ingredientId: string
+        quantity: float64
+        unit: string
+        required: bool
+        servingFactor: float64
+        preparation: string
+        ingredientName: string
+        category: string
+        defaultUnit: string
+        isPantryStaple: bool
+    steps:
+      - stepOrder: int
+        title: string
+        instruction: string
+        durationSeconds: int
+        hasTimer: bool
+
+# 删除菜谱
+DeleteRecipe:
+  method: DELETE
+  path: /api/v1/admin/recipes/:id
+  package: menu
+  filename: admin
+  permission: true
+
+# 获取全部食材
+ListAllIngredients:
+  method: GET
+  path: /api/v1/admin/ingredients
+  package: menu
+  filename: admin
+  permission: true
+  res:
+    - id: string # 食材ID
+      name: string # 食材名称
+      aliases: [string] # 别名列表
+      category: string # 分类
+      defaultUnit: string # 默认单位
+      isPantryStaple: bool # 是否常备食材
+      substituteGroup: string # 替代组
+      storeSkuMapping: string # 商店SKU映射
+
+# 创建食材
+CreateIngredient:
+  method: POST
+  path: /api/v1/admin/ingredients
+  package: menu
+  filename: admin
+  permission: true
+  req:
+    name: string %min(1),max(64) # 食材名称
+    aliases: [string] # 别名列表
+    category: string # 分类
+    defaultUnit: string # 默认单位
+    isPantryStaple: bool # 是否常备食材
+    substituteGroup: string # 替代组
+    storeSkuMapping: string # 商店SKU映射
+  res:
+    id: string # 食材ID
+    name: string
+    aliases: [string]
+    category: string
+    defaultUnit: string
+    isPantryStaple: bool
+    substituteGroup: string
+    storeSkuMapping: string
+
+# 更新食材
+UpdateIngredient:
+  method: PUT
+  path: /api/v1/admin/ingredients/:id
+  package: menu
+  filename: admin
+  permission: true
+  req:
+    name: string
+    aliases: [string]
+    category: string
+    defaultUnit: string
+    isPantryStaple: bool
+    substituteGroup: string
+    storeSkuMapping: string
+  res:
+    id: string
+    name: string
+    aliases: [string]
+    category: string
+    defaultUnit: string
+    isPantryStaple: bool
+    substituteGroup: string
+    storeSkuMapping: string
+
+# 删除食材
+DeleteIngredient:
+  method: DELETE
+  path: /api/v1/admin/ingredients/:id
+  package: menu
+  filename: admin
+  permission: true

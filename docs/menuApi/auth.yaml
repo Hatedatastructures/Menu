@@ -1,0 +1,60 @@
+# 用户认证模块
+# 对应 C++ server AuthRoutes (register/login/refresh)
+# 所有接口均为 POST,无需鉴权
+
+# 注册新用户
+Register:
+  method: POST
+  path: /api/v1/auth/register
+  package: menu
+  filename: auth
+  req:
+    email: string %email # 用户邮箱
+    password: string %min(8),max(128) # 密码(8-128位)
+    displayName: string %min(1),max(64) # 显示名称
+  res:
+    user:
+      id: string # 用户ID
+      email: string # 邮箱
+      displayName: string # 显示名称
+      isAdmin: bool # 是否管理员
+    accessToken: string # 访问令牌
+    refreshToken: string # 刷新令牌
+    accessTokenExpiresInSeconds: int # 访问令牌过期秒数
+
+# 用户登录
+Login:
+  method: POST
+  path: /api/v1/auth/login
+  package: menu
+  filename: auth
+  req:
+    email: string %email # 用户邮箱
+    password: string %min(1),max(128) # 密码
+  res:
+    user:
+      id: string # 用户ID
+      email: string # 邮箱
+      displayName: string # 显示名称
+      isAdmin: bool # 是否管理员
+    accessToken: string # 访问令牌
+    refreshToken: string # 刷新令牌
+    accessTokenExpiresInSeconds: int # 访问令牌过期秒数
+
+# 刷新令牌
+RefreshToken:
+  method: POST
+  path: /api/v1/auth/refresh
+  package: menu
+  filename: auth
+  req:
+    refreshToken: string # 刷新令牌
+  res:
+    user:
+      id: string # 用户ID
+      email: string # 邮箱
+      displayName: string # 显示名称
+      isAdmin: bool # 是否管理员
+    accessToken: string # 访问令牌
+    refreshToken: string # 刷新令牌
+    accessTokenExpiresInSeconds: int # 访问令牌过期秒数

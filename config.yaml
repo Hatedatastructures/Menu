@@ -1,0 +1,93 @@
+db-type: "pgsql"
+
+options:
+  enable_swagger: true
+  enable_migration: false
+  concurrency: 1
+gen:
+  root: "D:/coder/reactGin/Menu"  # 项目路径已经修改
+  t_api: "bk_api.tpl"
+  t_pages: "ft_pages.tpl"
+  t_ft_api: "ft_api.tpl"
+  t_store: ""
+  t_service: "bk_service.tpl"
+  t_route: "bk_router.tpl"
+  t_res: "bk_res.tpl"
+  t_req: "bk_req.tpl"
+  t_ft_json: "ft_json.tpl"
+  t_doc: "view_api.tpl"
+  t_zod: ""
+  t_auto_api_t: ""
+  t_json: "json.tpl"
+  t_model: "bk_model.tpl"
+  bk_service_dir: "gin-server/internal/service"
+  bk_api_dir: "gin-server/internal/api/v1"
+  bk_router_dir: "gin-server/internal/router"
+  bk_res_dir: "gin-server/internal/model"
+  bk_req_dir: "gin-server/internal/model"
+  bk_model_dir: "gin-server/internal/model"
+  bk_auto_router_dir: "gin-server/internal/initialize"
+  ft_api_dir: "web/src/api"
+  view_api_dir: "web/src/views"
+  model_name: "shack"
+  ft_json_dir: "web/src/api/json"
+  bk_auto_router: "gin-server/internal/initialize"
+  path_refect_json_name_dir: "web/src/api"
+  t_path_refect_json_name: "path_refect_json_name.tpl"
+
+file_snap_shot:
+  file_path: "docs/.snapshot/"
+  bk_api_dir: "gin-server/internal/api/v1"
+  bk_router_dir: "gin-server/internal/router"
+  bk_res_dir: "gin-server/internal/model"
+  req_dir: "gin-server/internal/model"
+  ft_api_dir: "web/src/api"
+  view_api_dir: "web/src/views"
+model_gen_curd:
+  # 1.模板传入路径
+  t_api: "modelGenCurd/bk_api.tpl"
+  t_api_enter: "modelGenCurd/bk_api_enter.tpl"
+  t_pages: "modelGenCurd/ft_pages.tpl"
+  t_ft_api: "modelGenCurd/ft_api.tpl"
+  t_store: ""
+  t_service: "modelGenCurd/bk_service.tpl"
+  t_service_enter: "modelGenCurd/bk_service_enter.tpl"
+  t_route: "modelGenCurd/bk_router.tpl"
+  t_route_enter: "modelGenCurd/bk_router_enter.tpl"
+  t_res: "modelGenCurd/bk_res.tpl"
+  t_req: "modelGenCurd/bk_req.tpl"
+  t_bk_auto_router: "modelGenCurd/bk_auto_router.tpl"
+
+  # 2.文件输出路径
+  # bd
+  service_dir: "gin-server/internal/service"
+  bd_api_dir: "gin-server/internal/api/v1"
+  router_dir: "gin-server/internal/router"
+  res_dir: "gin-server/internal/model"
+  req_dir: "gin-server/internal/model"
+  bk_auto_router: "gin-server/internal/initialize"
+
+  # fd
+  fd_api_dir: "web/src/api"
+  fd_pages_dir: "web/src/pages/(backend)"
+  fd_store_dir: "web/src/store"
+
+  # 3.后端配置
+  framework: "gin"
+  bd_service_pkg_suffix: "Bd"
+
+  # 4.前端配置
+  fd_framework: "react"
+  ui: "antd"
+  store: "zustand"
+  ft_api_suffix: "Fd"
+  file_suffix: "Bq"
+
+  # Base
+  model_name: "shack"
+  template_dir: "D:/coder/reactGin/Menu/templates"
+  root: "D:/coder/reactGin/Menu"
+
+self:
+  author: "shack"
+  github:  "https://github.com/hishack"

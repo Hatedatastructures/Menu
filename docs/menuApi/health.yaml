@@ -1,0 +1,20 @@
+# 系统健康检查模块
+# 对应 C++ server /healthz 和 /readyz
+
+# 健康检查
+Healthz:
+  method: GET
+  path: /healthz
+  package: menu
+  filename: health
+  res:
+    status: string # 服务状态:ok
+
+# 就绪检查
+Readyz:
+  method: GET
+  path: /readyz
+  package: menu
+  filename: health
+  res:
+    status: string # 服务状态:ready / starting

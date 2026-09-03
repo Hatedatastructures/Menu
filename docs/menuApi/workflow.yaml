@@ -1,0 +1,139 @@
+# 工作流模块(需登录)
+# 对应 C++ server WorkflowRoutes (plans/cooking-sessions/feedback)
+
+# 获取本周餐食计划
+ListPlans:
+  method: GET
+  path: /api/v1/plans?from=string&to=string
+  package: menu
+  filename: workflow
+  permission: true
+  res:
+    - id: string # 计划ID
+      planDate: string # 计划日期(YYYY-MM-DD)
+      items:
+        - id: string # 计划项ID
+          recipeId: string # 菜谱ID
+          recipeName: string # 菜谱名称
+          imagePath: string # 图片路径
+          servings: int # 份数
+          sortOrder: int # 排序
+          ingredients:
+            - ingredientId: string # 食材ID
+              ingredientName: string # 食材名称
+              category: string # 分类
+              defaultUnit: string # 默认单位
+              isPantryStaple: bool # 是否常备食材
+              quantity: float64 # 用量
+              unit: string # 单位
+              required: bool # 是否必需
+              preparation: string # 处理方式
+      combinedIngredients:
+        - ingredientId: string # 食材ID
+          ingredientName: string # 食材名称
+          category: string # 分类
+          defaultUnit: string # 默认单位
+          isPantryStaple: bool # 是否常备食材
+          quantity: float64 # 合并后总用量
+          unit: string # 单位
+          required: bool # 是否必需
+          preparation: string # 处理方式
+
+# 保存餐食计划
+SavePlan:
+  method: POST
+  path: /api/v1/plans
+  package: menu
+  filename: workflow
+  permission: true
+  req:
+    planDate: string %min(10),max(10) # 计划日期(YYYY-MM-DD)
+    items:
+      - recipeId: string %min(1),max(128) # 菜谱ID
+        servings: int %gte(1),lte(24) # 份数
+        sortOrder: int # 排序(可选)
+  res:
+    id: string # 计划ID
+    planDate: string # 计划日期
+    items:
+      - id: string
+        recipeId: string
+        recipeName: string
+        imagePath: string
+        servings: int
+        sortOrder: int
+        ingredients:
+          - ingredientId: string
+            ingredientName: string
+            category: string
+            defaultUnit: string
+            isPantryStaple: bool
+            quantity: float64
+            unit: string
+            required: bool
+            preparation: string
+    combinedIngredients:
+      - ingredientId: string
+        ingredientName: string
+        category: string
+        defaultUnit: string
+        isPantryStaple: bool
+        quantity: float64
+        unit: string
+        required: bool
+        preparation: string
+
+# 创建做饭会话
+CreateCookingSession:
+  method: POST
+  path: /api/v1/cooking-sessions
+  package: menu
+  filename: workflow
+  permission: true
+  req:
+    recipeId: string %min(1),max(128) # 菜谱ID
+  res:
+    id: string # 会话ID
+    recipeId: string # 菜谱ID
+    currentStepOrder: int # 当前步骤序号
+    state: string # 状态
+    startedAt: string # 开始时间
+    updatedAt: string # 更新时间
+
+# 更新做饭会话进度
+UpdateCookingSession:
+  method: PUT
+  path: /api/v1/cooking-sessions/:id
+  package: menu
+  filename: workflow
+  permission: true
+  req:
+    currentStepOrder: int %gte(1),lte(128) # 当前步骤序号
+    state: string %min(1),max(16) # 状态
+  res:
+    id: string # 会话ID
+    recipeId: string # 菜谱ID
+    currentStepOrder: int # 当前步骤序号
+    state: string # 状态
+    startedAt: string # 开始时间
+    updatedAt: string # 更新时间
+
+# 提交做饭反馈
+SubmitFeedback:
+  method: POST
+  path: /api/v1/feedback
+  package: menu
+  filename: workflow
+  permission: true
+  req:
+    recipeId: string %min(1),max(128) # 菜谱ID
+    outcome: string %min(1),max(16) # 结果:success/failure/partial
+    tags: [string] # 标签列表
+    comment: string %max(1000) # 评论
+  res:
+    id: string # 反馈ID
+    recipeId: string # 菜谱ID
+    outcome: string # 结果
+    tags: [string] # 标签列表
+    comment: string # 评论
+    createdAt: string # 创建时间

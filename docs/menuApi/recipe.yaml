@@ -1,0 +1,147 @@
+# 菜谱公开接口模块
+# 对应 C++ server RecipeRoutes (recipes/ingredients/recommendations)
+
+# 获取已发布菜谱列表(支持筛选)
+ListPublishedRecipes:
+  method: GET
+  path: /api/v1/recipes?cuisine=string&maxMinutes=int&difficulty=int&limit=int
+  package: menu
+  filename: recipe
+  res:
+    - id: string # 菜谱ID
+      slug: string # 菜谱别名
+      name: string # 菜谱名称
+      cuisine: string # 菜系
+      description: string # 描述
+      prepMinutes: int # 准备时间(分钟)
+      cookMinutes: int # 烹饪时间(分钟)
+      totalMinutes: int # 总时间(分钟)
+      servings: int # 份数
+      difficulty: int # 难度(1-5)
+      imagePath: string # 图片路径
+      status: string # 状态:published/draft/archived
+      allergens: [string] # 过敏原列表
+      cookware: [string] # 所需厨具
+      ingredients:
+        - ingredientId: string # 食材ID
+          quantity: float64 # 用量
+          unit: string # 单位
+          required: bool # 是否必需
+          servingFactor: float64 # 份数系数
+          preparation: string # 处理方式
+          ingredientName: string # 食材名称
+          category: string # 食材分类
+          defaultUnit: string # 默认单位
+          isPantryStaple: bool # 是否常备食材
+      steps:
+        - stepOrder: int # 步骤序号
+          title: string # 步骤标题
+          instruction: string # 操作说明
+          durationSeconds: int # 持续时间(秒)
+          hasTimer: bool # 是否需要计时
+
+# 获取全部食材列表
+ListIngredients:
+  method: GET
+  path: /api/v1/ingredients
+  package: menu
+  filename: recipe
+  res:
+    - id: string # 食材ID
+      name: string # 食材名称
+      aliases: [string] # 别名列表
+      category: string # 分类
+      defaultUnit: string # 默认单位
+      isPantryStaple: bool # 是否常备食材
+      substituteGroup: string # 替代组
+      storeSkuMapping: string # 商店SKU映射
+
+# 根据ID获取单个已发布菜谱
+GetPublishedRecipe:
+  method: GET
+  path: /api/v1/recipes/:id
+  package: menu
+  filename: recipe
+  res:
+    id: string # 菜谱ID
+    slug: string # 菜谱别名
+    name: string # 菜谱名称
+    cuisine: string # 菜系
+    description: string # 描述
+    prepMinutes: int # 准备时间(分钟)
+    cookMinutes: int # 烹饪时间(分钟)
+    totalMinutes: int # 总时间(分钟)
+    servings: int # 份数
+    difficulty: int # 难度(1-5)
+    imagePath: string # 图片路径
+    status: string # 状态
+    allergens: [string] # 过敏原列表
+    cookware: [string] # 所需厨具
+    ingredients:
+      - ingredientId: string # 食材ID
+        quantity: float64 # 用量
+        unit: string # 单位
+        required: bool # 是否必需
+        servingFactor: float64 # 份数系数
+        preparation: string # 处理方式
+        ingredientName: string # 食材名称
+        category: string # 食材分类
+        defaultUnit: string # 默认单位
+        isPantryStaple: bool # 是否常备食材
+    steps:
+      - stepOrder: int # 步骤序号
+        title: string # 步骤标题
+        instruction: string # 操作说明
+        durationSeconds: int # 持续时间(秒)
+        hasTimer: bool # 是否需要计时
+
+# 今晚推荐菜谱
+RecommendTonight:
+  method: POST
+  path: /api/v1/recommendations/tonight
+  package: menu
+  filename: recipe
+  req:
+    servings: int # 用餐人数
+    availableMinutes: int # 可用时间(分钟)
+    cuisines: [string] # 偏好菜系
+    allergies: [string] # 过敏原
+    pantryIngredientIds: [string] # 已有食材ID
+    cookware: [string] # 已有厨具
+    recentRecipeIds: [string] # 最近做过的菜谱ID
+  res:
+    - recipe:
+        id: string # 菜谱ID
+        slug: string # 菜谱别名
+        name: string # 菜谱名称
+        cuisine: string # 菜系
+        description: string # 描述
+        prepMinutes: int # 准备时间(分钟)
+        cookMinutes: int # 烹饪时间(分钟)
+        totalMinutes: int # 总时间(分钟)
+        servings: int # 份数
+        difficulty: int # 难度(1-5)
+        imagePath: string # 图片路径
+        status: string # 状态
+        allergens: [string] # 过敏原列表
+        cookware: [string] # 所需厨具
+        ingredients:
+          - ingredientId: string
+            quantity: float64
+            unit: string
+            required: bool
+            servingFactor: float64
+            preparation: string
+            ingredientName: string
+            category: string
+            defaultUnit: string
+            isPantryStaple: bool
+        steps:
+          - stepOrder: int
+            title: string
+            instruction: string
+            durationSeconds: int
+            hasTimer: bool
+      availableIngredientCount: int # 已有食材数量
+      missingIngredientCount: int # 缺少食材数量
+      score: int # 推荐分数

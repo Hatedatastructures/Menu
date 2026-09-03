@@ -1,0 +1,70 @@
+# 服务配置模块 API 定义
+# 参考: docs/api/config.md
+# 对应 webapp/server.py 中 /api/config 相关接口(文本/图片模型 Key、地址、模型与配音音色)
+
+# 获取当前服务配置(API Key 脱敏展示)
+GetConfig:
+  method: GET
+  path: /api/config
+  package: config
+  filename: config
+  res:
+    text_api_key: string # 文本模型 API Key(脱敏,仅显示首尾4位)
+    text_base_url: string # 文本模型接口地址
+    text_model: string # 文本模型名称
+    image_api_key: string # 图片模型 API Key(脱敏)
+    image_base_url: string # 图片模型接口地址
+    image_model: string # 图片模型名称
+    edge_voice: string # 配音音色
+    has_text_api_key: bool # 是否已配置文本模型 Key
+    has_image_api_key: bool # 是否已配置图片模型 Key
+
+# 保存服务配置
+SaveConfig:
+  method: POST
+  path: /api/config
+  package: config
+  filename: config
+  req:
+    text_api_key: string # 文本模型 API Key(值为脱敏串时不覆盖)
+    text_base_url: string # 文本模型接口地址
+    text_model: string # 文本模型名称
+    image_api_key: string # 图片模型 API Key(值为脱敏串时不覆盖)
+    image_base_url: string # 图片模型接口地址
+    image_model: string # 图片模型名称
+    edge_voice: string # 配音音色
+  res:
+    text_api_key: string # 脱敏展示
+    text_base_url: string
+    text_model: string
+    image_api_key: string # 脱敏展示
+    image_base_url: string
+    image_model: string
+    edge_voice: string
+    has_text_api_key: bool
+    has_image_api_key: bool
+
+# 测试服务配置是否可用(分别连通文本模型、图片模型与配音服务)
+TestConfig:
+  method: POST
+  path: /api/config/test
+  package: config
+  filename: config
+  req:
+    text_api_key: string # 文本模型 API Key
+    text_base_url: string # 文本模型接口地址
+    text_model: string # 文本模型名称
+    image_api_key: string # 图片模型 API Key
+    image_base_url: string # 图片模型接口地址
+    image_model: string # 图片模型名称
+    edge_voice: string # 配音音色
+  res:
+    text:
+      ok: bool # 文本模型是否连通
+      message: string # 提示信息
+    image:
+      ok: bool # 图片模型是否可用
+      message: string # 提示信息
+    tts:
+      ok: bool # 配音服务是否可用
+      message: string # 提示信息
