@@ -62,7 +62,17 @@ bool ClientApi::ApplyData(DataKind Kind, const QByteArray& Data, bool IsCached) 
     }
     QJsonArray Values;
     if (!IsCached && Document.isArray()) {
+        // 直接是数组(兼容旧 C++ 后端)
         Values = Document.array();
+    } else if (!IsCached && Document.isObject()) {
+        // Go gin-server vo.Result 包装: { code, msg, data: [...], requestId, timeStamp }
+        const QJsonObject Object = Document.object();
+        const QJsonArray DataArray = Object.value(QStringLiteral("data")).toArray();
+        if (!DataArray.isEmpty()) {
+            Values = DataArray;
+        } else {
+            return false;
+        }
     } else if (IsCached && Document.isObject()) {
         const QJsonObject Object = Document.object();
         const QString ExpectedKind = Kind == DataKind::Recipes

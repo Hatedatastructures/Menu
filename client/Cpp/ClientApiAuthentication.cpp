@@ -58,9 +58,12 @@ void ClientApi::HandleAuthenticationReply(
         return;
     }
     const QJsonObject Object = Document.object();
-    const QString AccessToken = Object.value(QStringLiteral("accessToken")).toString();
-    const QString RefreshToken = Object.value(QStringLiteral("refreshToken")).toString();
-    const QVariantMap User = Object.value(QStringLiteral("user")).toObject().toVariantMap();
+    // Go gin-server 返回 vo.Result 包装: { code, msg, data: {...}, requestId, timeStamp }
+    // 需要从 data 字段中提取实际的认证数据
+    const QJsonObject Data = Object.value(QStringLiteral("data")).toObject();
+    const QString AccessToken = Data.value(QStringLiteral("accessToken")).toString();
+    const QString RefreshToken = Data.value(QStringLiteral("refreshToken")).toString();
+    const QVariantMap User = Data.value(QStringLiteral("user")).toObject().toVariantMap();
     const QString UserDisplayName = User.value(QStringLiteral("displayName")).toString();
     const QString UserId = User.value(QStringLiteral("id")).toString();
     if (AccessToken.isEmpty() || RefreshToken.isEmpty() || UserDisplayName.isEmpty() ||
