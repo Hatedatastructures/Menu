@@ -208,32 +208,11 @@ func (s *RecipeService) fillRecipeDetails(recipes []menuModel.MenuRecipe) {
 		ids[i] = r.Id
 	}
 
-	// 查询所有菜谱食材(含食材名)
-	var recipeIngs []struct {
-		RecipeId         string
-		IngredientId     string
-		Quantity         float64
-		Unit             string
-		ServingFactor    float64
-		Preparation      string
-		Required         bool
-		IngredientName   string
-		Category         string
-		DefaultUnit      string
-		IsPantryStaple   bool
-	}
-	global.GVA_DB.Table("RecipeIngredients").
-		Select("RecipeIngredients.*, Ingredients.Name as ingredient_name, Ingredients.Category as category, Ingredients.DefaultUnit as default_unit, Ingredients.IsPantryStaple as is_pantry_staple").
-		Joins("LEFT JOIN Ingredients ON RecipeIngredients.IngredientId = Ingredients.Id").
-		Where("RecipeIngredients.RecipeId IN ?", ids).
-		Scan(&recipeIngs)
+	// 查询所有菜谱食材
+	var recipeIngs []menuModel.MenuRecipeIngredient
+	global.GVA_DB.Where("RecipeId IN ?", ids).Find(&recipeIngs)
 
-	// 查询所有步骤
-	var steps []menuModel.MenuRecipeStep
-	global.GVA_DB.Where("RecipeId IN ?", ids).Order("StepOrder ASC").Find(&steps)
-
-	// 查询所有别名
-	var allAliases []menuModel.MenuIngredientAlias
+	// 查询关联的食材信息
 	ingIdSet := make(map[string]bool)
 	for _, ri := range recipeIngs {
 		ingIdSet[ri.IngredientId] = true
@@ -242,27 +221,33 @@ func (s *RecipeService) fillRecipeDetails(recipes []menuModel.MenuRecipe) {
 	for id := range ingIdSet {
 		ingIds = append(ingIds, id)
 	}
-	if len(ingIds) > 0 {
-		global.GVA_DB.Where("IngredientId IN ?", ingIds).Find(&allAliases)
-	}
-	_ = allAliases // 别名在 recipe list 中不需要
 
-	// 组装
+	ingInfoMap := make(map[string]menuModel.MenuIngredient)
+	if len(ingIds) > 0 {
+		var ings []menuModel.MenuIngredient
+		global.GVA_DB.Where("Id IN ?", ingIds).Find(&ings)
+		for _, ing := range ings {
+			ingInfoMap[ing.Id] = ing
+		}
+	}
+
+	// 查询所有步骤
+	var steps []menuModel.MenuRecipeStep
+	global.GVA_DB.Where("RecipeId IN ?", ids).Order("StepOrder ASC").Find(&steps)
+
+	// 组装食材(填充名称等信息)
+	for i := range recipeIngs {
+		if info, ok := ingInfoMap[recipeIngs[i].IngredientId]; ok {
+			recipeIngs[i].IngredientName = info.Name
+			recipeIngs[i].Category = info.Category
+			recipeIngs[i].DefaultUnit = info.DefaultUnit
+			recipeIngs[i].IsPantryStaple = info.IsPantryStaple
+		}
+	}
+
 	ingMap := make(map[string][]menuModel.MenuRecipeIngredient)
 	for _, ri := range recipeIngs {
-		ingMap[ri.RecipeId] = append(ingMap[ri.RecipeId], menuModel.MenuRecipeIngredient{
-			RecipeId:      ri.RecipeId,
-			IngredientId:  ri.IngredientId,
-			Quantity:      ri.Quantity,
-			Unit:          ri.Unit,
-			ServingFactor: ri.ServingFactor,
-			Preparation:   ri.Preparation,
-			Required:      ri.Required,
-			IngredientName: ri.IngredientName,
-			Category:       ri.Category,
-			DefaultUnit:    ri.DefaultUnit,
-			IsPantryStaple: ri.IsPantryStaple,
-		})
+		ingMap[ri.RecipeId] = append(ingMap[ri.RecipeId], ri)
 	}
 	stepMap := make(map[string][]menuModel.MenuRecipeStep)
 	for _, step := range steps {
@@ -275,9 +260,42 @@ func (s *RecipeService) fillRecipeDetails(recipes []menuModel.MenuRecipe) {
 	}
 }
 
-// fillRecipeSingle 填充单个菜谱详情
+// fillRecipeSingle 填充单个菜谱详情(直接操作原始指针)
 func (s *RecipeService) fillRecipeSingle(recipe *menuModel.MenuRecipe) {
-	s.fillRecipeDetails([]menuModel.MenuRecipe{*recipe})
+	// 查询食材
+	var recipeIngs []menuModel.MenuRecipeIngredient
+	global.GVA_DB.Where("RecipeId = ?", recipe.Id).Find(&recipeIngs)
+
+	ingIdSet := make(map[string]bool)
+	for _, ri := range recipeIngs {
+		ingIdSet[ri.IngredientId] = true
+	}
+	ingIds := make([]string, 0, len(ingIdSet))
+	for id := range ingIdSet {
+		ingIds = append(ingIds, id)
+	}
+	ingInfoMap := make(map[string]menuModel.MenuIngredient)
+	if len(ingIds) > 0 {
+		var ings []menuModel.MenuIngredient
+		global.GVA_DB.Where("Id IN ?", ingIds).Find(&ings)
+		for _, ing := range ings {
+			ingInfoMap[ing.Id] = ing
+		}
+	}
+	for i := range recipeIngs {
+		if info, ok := ingInfoMap[recipeIngs[i].IngredientId]; ok {
+			recipeIngs[i].IngredientName = info.Name
+			recipeIngs[i].Category = info.Category
+			recipeIngs[i].DefaultUnit = info.DefaultUnit
+			recipeIngs[i].IsPantryStaple = info.IsPantryStaple
+		}
+	}
+	recipe.Ingredients = recipeIngs
+
+	// 查询步骤
+	var steps []menuModel.MenuRecipeStep
+	global.GVA_DB.Where("RecipeId = ?", recipe.Id).Order("StepOrder ASC").Find(&steps)
+	recipe.Steps = steps
 }
 
 // toRecipeRes 将 GORM 模型转换为响应 DTO

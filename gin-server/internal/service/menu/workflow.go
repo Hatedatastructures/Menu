@@ -219,34 +219,41 @@ func (s *WorkflowService) fillPlanItems(plan *menuModel.MenuMealPlan) {
 			items[i].ImagePath = recipe.ImagePath
 		}
 
-		// 查询菜谱食材
-		var recipeIngs []struct {
-			RecipeId         string
-			IngredientId     string
-			Quantity         float64
-			Unit             string
-			Required         bool
-			Preparation      string
-			IngredientName   string
-			Category         string
-			DefaultUnit      string
-			IsPantryStaple   bool
+		// 查询菜谱食材(分开查询避免 JOIN 问题)
+		var recipeIngs []menuModel.MenuRecipeIngredient
+		global.GVA_DB.Where("RecipeId = ?", items[i].RecipeId).Find(&recipeIngs)
+
+		// 查询关联食材信息
+		ingIds := make([]string, 0, len(recipeIngs))
+		for _, ri := range recipeIngs {
+			ingIds = append(ingIds, ri.IngredientId)
 		}
-		global.GVA_DB.Table("RecipeIngredients").
-			Select("RecipeIngredients.*, Ingredients.Name as ingredient_name, Ingredients.Category as category, Ingredients.DefaultUnit as default_unit, Ingredients.IsPantryStaple as is_pantry_staple").
-			Joins("LEFT JOIN Ingredients ON RecipeIngredients.IngredientId = Ingredients.Id").
-			Where("RecipeIngredients.RecipeId = ?", items[i].RecipeId).
-			Scan(&recipeIngs)
+		ingInfoMap := make(map[string]menuModel.MenuIngredient)
+		if len(ingIds) > 0 {
+			var ings []menuModel.MenuIngredient
+			global.GVA_DB.Where("Id IN ?", ingIds).Find(&ings)
+			for _, ing := range ings {
+				ingInfoMap[ing.Id] = ing
+			}
+		}
 
 		ings := make([]menuModel.MenuPlanIngredient, len(recipeIngs))
 		for j, ri := range recipeIngs {
 			qty := ri.Quantity * float64(items[i].Servings)
+			var ingName, category, defaultUnit string
+			var isPantryStaple bool
+			if info, ok := ingInfoMap[ri.IngredientId]; ok {
+				ingName = info.Name
+				category = info.Category
+				defaultUnit = info.DefaultUnit
+				isPantryStaple = info.IsPantryStaple
+			}
 			ings[j] = menuModel.MenuPlanIngredient{
 				IngredientId:   ri.IngredientId,
-				IngredientName: ri.IngredientName,
-				Category:       ri.Category,
-				DefaultUnit:    ri.DefaultUnit,
-				IsPantryStaple: ri.IsPantryStaple,
+				IngredientName: ingName,
+				Category:       category,
+				DefaultUnit:    defaultUnit,
+				IsPantryStaple: isPantryStaple,
 				Quantity:       qty,
 				Unit:           ri.Unit,
 				Required:       ri.Required,

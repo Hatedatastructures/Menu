@@ -46,7 +46,8 @@ func (s *WorkflowApi) ListPlansHandler(c *gin.Context) {
 		c.JSON(201, vo.Fail(c, "", err))
 		return
 	}
-	c.JSON(200, vo.Success(c, "操作成功"))
+	data, _ := c.Get("planList")
+	c.JSON(200, vo.Success(c, data))
 }
 
 // SavePlanHandler

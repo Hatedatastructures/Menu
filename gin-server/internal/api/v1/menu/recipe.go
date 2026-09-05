@@ -76,7 +76,8 @@ func (s *RecipeApi) ListPublishedRecipesHandler(c *gin.Context) {
 		c.JSON(201, vo.Fail(c, "", err))
 		return
 	}
-	c.JSON(200, vo.Success(c, "操作成功"))
+	data, _ := c.Get("recipeList")
+	c.JSON(200, vo.Success(c, data))
 }
 
 // ListIngredientsHandler
@@ -91,7 +92,8 @@ func (s *RecipeApi) ListIngredientsHandler(c *gin.Context) {
 		c.JSON(201, vo.Fail(c, "", err))
 		return
 	}
-	c.JSON(200, vo.Success(c, "操作成功"))
+	data, _ := c.Get("recipeList")
+	c.JSON(200, vo.Success(c, data))
 }
 
 // GetPublishedRecipeHandler
@@ -133,5 +135,6 @@ func (s *RecipeApi) RecommendTonightHandler(c *gin.Context) {
 		c.JSON(201, vo.Fail(c, "", err))
 		return
 	}
-	c.JSON(200, vo.Success(c, "操作成功"))
+	data, _ := c.Get("recipeRecommend")
+	c.JSON(200, vo.Success(c, data))
 }

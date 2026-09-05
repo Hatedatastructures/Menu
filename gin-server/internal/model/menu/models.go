@@ -95,8 +95,8 @@ type MenuRefreshToken struct {
 	Id        string       `json:"id" gorm:"column:Id;type:text;primaryKey"`
 	UserId    string       `json:"userId" gorm:"column:UserId;type:text;not null;index"`
 	TokenHash string       `json:"-" gorm:"column:TokenHash;type:text;not null;uniqueIndex"`
-	ExpiresAt time.Time    `json:"expiresAt" gorm:"column:ExpiresAt;type:text;not null"`
-	RevokedAt *time.Time   `json:"-" gorm:"column:RevokedAt;type:text"`
+	ExpiresAt time.Time    `json:"expiresAt" gorm:"column:ExpiresAt;not null"`
+	RevokedAt *time.Time   `json:"-" gorm:"column:RevokedAt"`
 }
 
 func (MenuRefreshToken) TableName() string { return "RefreshTokens" }
