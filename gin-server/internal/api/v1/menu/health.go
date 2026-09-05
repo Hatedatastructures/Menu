@@ -1,13 +1,10 @@
 package menu
 
 import (
-
-	"github.com/gin-gonic/gin"
-	req "shack/internal/model/menu/request"
 	_ "shack/internal/model/menu/response"
 	"shack/internal/vo"
-	"shack/internal/utils/validator"
 
+	"github.com/gin-gonic/gin"
 )
 
 type HealthApi struct{}

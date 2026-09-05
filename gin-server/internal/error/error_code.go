@@ -78,6 +78,25 @@ const (
 	DICT_VALUE_DUPLICATE = 0x00010D01 // 字典值已存在
 	DICT_NOT_FOUND       = 0x00010D02 // 字典不存在
 	DICT_TYPE_DUPLICATE  = 0x00010D03 // 字典类型已存在
+
+	// Menu 菜谱模块 (0x00010E00 - 0x00010EFF)
+	RECIPE_NOT_FOUND       = 0x00010E01 // 菜谱不存在
+	INGREDIENT_NOT_FOUND   = 0x00010E02 // 食材不存在
+	RECIPE_CREATE_FAILED   = 0x00010E03 // 菜谱创建失败
+	RECIPE_UPDATE_FAILED   = 0x00010E04 // 菜谱更新失败
+	RECIPE_DELETE_FAILED   = 0x00010E05 // 菜谱删除失败
+	INGREDIENT_CREATE_FAILED = 0x00010E06 // 食材创建失败
+	INGREDIENT_UPDATE_FAILED = 0x00010E07 // 食材更新失败
+	INGREDIENT_DELETE_FAILED = 0x00010E08 // 食材删除失败
+	PLAN_NOT_FOUND         = 0x00010E09 // 计划不存在
+	PLAN_SAVE_FAILED       = 0x00010E0A // 计划保存失败
+	SESSION_NOT_FOUND      = 0x00010E0B // 做饭会话不存在
+	SESSION_CREATE_FAILED  = 0x00010E0C // 做饭会话创建失败
+	SESSION_UPDATE_FAILED  = 0x00010E0D // 做饭会话更新失败
+	FEEDBACK_CREATE_FAILED = 0x00010E0E // 反馈创建失败
+	REGISTER_FAILED_MENU   = 0x00010E0F // 注册失败
+	LOGIN_FAILED_MENU      = 0x00010E10 // 登录失败
+	REFRESH_FAILED         = 0x00010E11 // 刷新令牌失败
 )
 
 // CodeMsg 映射错误码到对应的错误信息
@@ -151,6 +170,25 @@ var CodeMsg = map[int]string{
 	DICT_VALUE_DUPLICATE: "字典值已存在",
 	DICT_NOT_FOUND:       "字典不存在",
 	DICT_TYPE_DUPLICATE:  "字典类型已存在",
+
+	// Menu 菜谱模块
+	RECIPE_NOT_FOUND:         "菜谱不存在",
+	INGREDIENT_NOT_FOUND:     "食材不存在",
+	RECIPE_CREATE_FAILED:     "菜谱创建失败",
+	RECIPE_UPDATE_FAILED:     "菜谱更新失败",
+	RECIPE_DELETE_FAILED:     "菜谱删除失败",
+	INGREDIENT_CREATE_FAILED: "食材创建失败",
+	INGREDIENT_UPDATE_FAILED: "食材更新失败",
+	INGREDIENT_DELETE_FAILED: "食材删除失败",
+	PLAN_NOT_FOUND:           "计划不存在",
+	PLAN_SAVE_FAILED:         "计划保存失败",
+	SESSION_NOT_FOUND:        "做饭会话不存在",
+	SESSION_CREATE_FAILED:    "做饭会话创建失败",
+	SESSION_UPDATE_FAILED:    "做饭会话更新失败",
+	FEEDBACK_CREATE_FAILED:   "反馈创建失败",
+	REGISTER_FAILED_MENU:     "注册失败",
+	LOGIN_FAILED_MENU:        "登录失败",
+	REFRESH_FAILED:           "刷新令牌失败",
 
 	// 未知错误
 	UNKNOWN_ERROR: "未知错误",
