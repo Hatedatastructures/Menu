@@ -1,0 +1,43 @@
+package systemRbac
+
+type ServiceGroup struct {
+	*SysMonitorService
+	AiConfigService
+	ApiService
+	ApiTestService
+	AuthService
+	CaptchaClickService
+	CaptchaRotateService
+	CaptchaSliderService
+	CasbinService
+	ChatService
+	ConfigEmailService
+	ConfigEmailTemplateService
+	ConfigEncryptService
+	ConfigGroupService
+	ConfigLoginService
+	ConfigPasswordService
+	ConfigRegisterService
+	ConfigSecurityService
+	ConfigSystemService
+	DictDetailService
+	DictService
+	EmailLimitService
+	EmailLogService
+	EmailSendService
+	EmailStatisticsService
+	EmailTaskService
+	EmailTemplateService
+	FileService
+	LoginLogService
+	NoticeService
+	OprationService
+	ProfileService
+	SysAuthorityBtnService
+	SysAuthorityService
+	SysBaseMenuService
+	SysMenuService
+	SysUserService
+	TemplateService
+	VerifyCodeService
+}

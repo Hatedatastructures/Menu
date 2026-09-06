@@ -128,7 +128,12 @@ void ClientApi::HandleCookingSessionReply(
         SetError(QStringLiteral("做饭进度响应无效"));
         return;
     }
-    CurrentCookingSessionValue = Document.object().toVariantMap();
+    // Go gin-server vo.Result 包装: 从 data 字段提取实际数据
+    const QJsonObject Root = Document.object();
+    const QJsonObject ActualData = Root.value(QStringLiteral("data")).toObject();
+    CurrentCookingSessionValue = ActualData.isEmpty()
+        ? Root.toVariantMap()
+        : ActualData.toVariantMap();
     emit CookingSessionChanged();
     emit cookingSessionChanged();
 }

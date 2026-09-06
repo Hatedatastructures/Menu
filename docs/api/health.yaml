@@ -1,0 +1,28 @@
+# 系统健康模块 API 定义
+# 参考: docs/api/health.md
+
+# 系统健康检查
+Health:
+  method: GET
+  path: /api/health
+  package: health
+  filename: health
+  res:
+    status: string # 服务状态:ok / error
+    renderer: bool # 本地渲染器(Python 脚本)是否可用
+    tts: [string] # 可用的配音后端列表
+    queues:
+      voice:
+        concurrency: int # 配音并发数
+        waiting: int # 排队中的配音任务数
+        nodes:
+          - index: int # 节点序号
+            url: string # 节点地址
+            active: bool # 是否有任务正在处理
+            job_id: string # 当前处理的任务ID
+      model:
+        concurrency: int # 模型调用并发数
+        waiting: int # 排队中的模型任务数
+      render:
+        concurrency: string # 渲染并发模式(local-direct)
+        active: int # 正在渲染的任务数

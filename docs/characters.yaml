@@ -1,0 +1,119 @@
+# OC 角色模块 API 定义
+# 参考: docs/api/characters.md
+
+# 获取OC角色列表
+GetCharacterList:
+  method: GET
+  path: /characters
+  package: oc
+  filename: characters
+  req:
+    page: int # 页码
+    size: int # 每页数量
+    keyword: string # 关键词
+  res:
+    list:
+      - id: int64
+        name: string
+        avatar: string
+        age: int64
+        race: string
+        description: string
+        relationCount: int64
+        tags: [string]
+    total: int64
+
+# 获取单个OC角色详细信息
+GetCharacterDetail:
+  method: GET
+  path: /characters/:id
+  package: oc
+  filename: characters
+  res:
+    id: int64
+    name: string
+    avatar: string
+    basicInfo:
+      fullName: string
+      age: int64
+      birthday: string
+      race: string
+      occupation: string
+      alignment: string
+    tags: [string]
+    description: string
+    relations:
+      - id: int64
+        name: string
+        avatar: string
+        relationship: string
+        description: string
+    gallery: [string] # 角色画廊图片URL数组
+
+# 创建OC角色
+CreateCharacter:
+  method: POST
+  path: /characters
+  package: oc
+  filename: characters
+  permission: true
+  req:
+    name: string # 角色名称
+    avatar: string # 头像URL
+    fullName: string # 全名
+    age: int64 # 年龄
+    birthday: string # 生日
+    race: string # 种族
+    occupation: string # 职业
+    alignment: string # 阵营
+    description: string # 描述
+    tags: [string] # 标签
+  res:
+    id: int64
+
+# 更新OC角色信息
+UpdateCharacter:
+  method: PUT
+  path: /characters/:id
+  package: oc
+  filename: characters
+  permission: true
+  req:
+    name: string # 角色名称
+    avatar: string # 头像URL
+    fullName: string # 全名
+    age: int64 # 年龄
+    birthday: string # 生日
+    race: string # 种族
+    occupation: string # 职业
+    alignment: string # 阵营
+    description: string # 描述
+    tags: [string] # 标签
+
+# 更新OC角色画廊
+UpdateCharacterGallery:
+  method: PUT
+  path: /characters/:id/gallery
+  package: oc
+  filename: characters
+  permission: true
+  req:
+    gallery: [string] # 角色画廊图片URL数组
+
+# 删除OC角色
+DeleteCharacter:
+  method: DELETE
+  path: /characters/:id
+  package: oc
+  filename: characters
+  permission: true
+
+# 批量删除OC角色
+BatchDeleteCharacters:
+  method: DELETE
+  path: /characters
+  package: oc
+  filename: characters
+  permission: true
+  req:
+    ids: [int64] # 角色ID数组

@@ -1,0 +1,11 @@
+{
+  "name": "service-completer-scripts",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "file-check": "node file-check.js",
+    "model-check": "node model-check.js",
+    "err-code-check": "node err-code-check.js",
+    "err-code-create": "node err-code-create.js"
+  }
+}

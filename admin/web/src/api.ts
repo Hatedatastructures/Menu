@@ -19,9 +19,9 @@ export type RecipeIngredient = {
   servingFactor: number;
   preparation: string;
   ingredientName?: string;
-  ingredientCategory?: string;
-  ingredientDefaultUnit?: string;
-  ingredientIsPantryStaple?: boolean;
+  category?: string;
+  defaultUnit?: string;
+  isPantryStaple?: boolean;
 };
 
 export type RecipeStep = {
@@ -51,15 +51,20 @@ export type Recipe = {
   steps: RecipeStep[];
 };
 
-type ApiErrorBody = {
-  error?: { code?: string; message?: string; requestId?: string };
+/** Go gin-server vo.Result 包装格式 */
+type VoResult<T> = {
+  code: number;
+  msg: string;
+  data: T;
+  requestId: string;
+  timeStamp: number;
 };
 
 export class ApiError extends Error {
   readonly status: number;
-  readonly code: string;
+  readonly code: number;
 
-  constructor(status: number, code: string, message: string) {
+  constructor(status: number, code: number, message: string) {
     super(message);
     this.name = "ApiError";
     this.status = status;
@@ -115,6 +120,11 @@ export function SerializeIngredient(ingredient: Ingredient) {
 
 const ApiBaseUrl = import.meta.env.VITE_API_BASE_URL ?? "";
 
+/**
+ * 发起请求并解包 vo.Result 响应。
+ * Go 后端返回 { code, msg, data, requestId, timeStamp }，
+ * 本函数提取 data 字段直接返回给调用方。
+ */
 async function Request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${ApiBaseUrl}${path}`, {
     ...init,
@@ -133,16 +143,22 @@ async function Request<T>(path: string, init?: RequestInit): Promise<T> {
     }
   }
   if (!response.ok) {
-    const errorBody = (body ?? {}) as ApiErrorBody;
+    const result = (body ?? {}) as VoResult<unknown>;
     if (response.status === 401) {
       window.dispatchEvent(new Event("menu-auth-expired"));
     }
     throw new ApiError(
       response.status,
-      errorBody.error?.code ?? "request_failed",
-      errorBody.error?.message ?? "请求失败",
+      result.code ?? -1,
+      result.msg ?? "请求失败",
     );
   }
+  // 解包 vo.Result: 从 { code, msg, data } 中提取 data
+  const result = body as VoResult<T>;
+  if (result && typeof result === "object" && "code" in result && "data" in result) {
+    return result.data;
+  }
+  // 兼容未包装的响应(如 204 No Content)
   return body as T;
 }
 
@@ -190,7 +206,7 @@ export const AdminApi = {
   },
   updateRecipe(token: string, recipe: Recipe) {
     return Request<Recipe>(`/api/v1/admin/recipes/${encodeURIComponent(recipe.id)}`, AuthorizedInit(token, {
-      method: "PATCH",
+      method: "PUT",
       body: JSON.stringify(SerializeRecipe(recipe)),
     }));
   },
@@ -216,7 +232,7 @@ export const IngredientApi = {
   },
   update(token: string, ingredient: Ingredient) {
     return Request<Ingredient>(`/api/v1/admin/ingredients/${encodeURIComponent(ingredient.id)}`, AuthorizedInit(token, {
-      method: "PATCH",
+      method: "PUT",
       body: JSON.stringify(SerializeIngredient(ingredient)),
     }));
   },

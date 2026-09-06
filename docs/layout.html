@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Remotion · 13 Layout Candidates</title>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden}
+body{
+  background:#f4f0e7;
+  color:#2f2e2a;
+  font-family:Arial,"PingFang SC","Microsoft YaHei",sans-serif;
+}
+button{font:inherit}
+.app{
+  width:100vw;height:100vh;
+  display:flex;flex-direction:column;
+}
+.top{
+  height:112px;
+  padding:22px 42px 12px;
+  border-bottom:1px solid #cfc8b9;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+}
+.title h1{
+  margin:0;
+  font-size:30px;
+  font-weight:500;
+  letter-spacing:.03em;
+}
+.title p{
+  margin:7px 0 0;
+  font-size:14px;
+  color:#756f64;
+}
+.controls{
+  display:flex;
+  gap:7px;
+  flex-wrap:wrap;
+  max-width:680px;
+  justify-content:flex-end;
+}
+.tab{
+  border:1px solid #bdb6a8;
+  background:#faf8f2;
+  color:#555047;
+  padding:6px 11px;
+  border-radius:7px;
+  cursor:pointer;
+  font-size:12px;
+  transition:.15s;
+}
+.tab:hover{background:#eee9df}
+.tab.active{
+  background:#30302d;
+  color:#fff;
+  border-color:#30302d;
+}
+.main{
+  flex:1;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:18px 40px 30px;
+}
+.workspace{
+  width:min(1240px,94vw);
+}
+.meta{
+  height:58px;
+  display:grid;
+  grid-template-columns:1.1fr 1.5fr 1fr 1fr 1fr 1.4fr;
+  gap:1px;
+  margin-bottom:13px;
+  border:1px solid #c9c1b3;
+  background:#c9c1b3;
+}
+.meta-item{
+  background:#f8f5ed;
+  padding:8px 12px;
+  min-width:0;
+}
+.meta-label{
+  color:#8b8478;
+  font-size:10px;
+  text-transform:uppercase;
+  margin-bottom:4px;
+}
+.meta-value{
+  font-size:12px;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.frame{
+  width:100%;
+  aspect-ratio:16/9;
+  position:relative;
+  overflow:hidden;
+  background:#fbf9f4;
+  border:1.5px solid #aaa294;
+  box-shadow:0 10px 35px rgba(70,60,45,.08);
+}
+.frame:before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background-image:
+    linear-gradient(rgba(100,90,70,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(100,90,70,.035) 1px,transparent 1px);
+  background-size:32px 32px;
+}
+.scene{
+  display:none;
+  position:absolute;
+  inset:5.5%;
+}
+.scene.active{display:block}
+.beat{
+  position:absolute;
+  border:2px solid #2868b7;
+  background:#eaf2fb;
+  color:#2868b7;
+  padding:12px;
+  overflow:hidden;
+}
+.beat.red{
+  border-color:#c64f45;
+  background:#f8eee8;
+  color:#b34b42;
+}
+.beat.green{
+  border-color:#4d816c;
+  background:#edf5ef;
+  color:#4d816c;
+}
+.beat.anchor{
+  background:#dceafb;
+  border-width:3px;
+}
+.beat b{
+  display:inline-block;
+  font-size:13px;
+  font-weight:500;
+  letter-spacing:.03em;
+}
+.beat br+*{}
+.tag{
+  float:right;
+  font-size:10px;
+  opacity:.75;
+  padding-left:8px;
+}
+.beat div{
+  position:absolute;
+  left:12px;
+  top:11px;
+  right:12px;
+}
+.beat div:after{
+  content:"";
+  display:block;
+  margin-top:7px;
+  width:58%;
+  height:5px;
+  border-top:1px solid currentColor;
+  border-bottom:1px solid currentColor;
+  opacity:.32;
+}
+.path{
+  position:absolute;
+  height:2px;
+  background:#7e786d;
+  transform-origin:left center;
+  opacity:.65;
+}
+.label{
+  position:absolute;
+  font-size:10px;
+  color:#787165;
+  background:#f5f1e8;
+  padding:3px 7px;
+  border:1px dashed #bbb3a5;
+}
+.caption{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-top:11px;
+  color:#777064;
+  font-size:12px;
+}
+.caption strong{color:#3e3c37;font-weight:500}
+.nav{
+  display:flex;
+  gap:8px;
+}
+.nav button{
+  border:1px solid #bbb3a5;
+  background:#faf8f2;
+  border-radius:6px;
+  padding:5px 13px;
+  cursor:pointer;
+  color:#4c4942;
+}
+.nav button:hover{background:#eae5da}
+
+/* 02 Hero + Rail */
+.s1 .b1{left:0;top:0;width:66%;height:74%}
+.s1 .b2{right:0;top:0;width:28%;height:34%}
+.s1 .b3{right:0;top:40%;width:28%;height:34%}
+.s1 .b4{left:0;bottom:0;width:100%;height:18%}
+.s1 .p1{left:66%;top:31%;width:17%}
+.s1 .l1{left:69%;top:27%}
+
+/* 03 Vertical Anchor */
+.s2 .b1{left:0;top:0;width:42%;height:100%}
+.s2 .b2{right:0;top:0;width:50%;height:22%}
+.s2 .b3{right:0;top:29%;width:50%;height:22%}
+.s2 .b4{right:0;top:58%;width:50%;height:22%}
+.s2 .b5{right:0;bottom:0;width:50%;height:14%}
+.s2 .p1{left:42%;top:40%;width:22%}
+.s2 .l1{left:47%;top:35%}
+
+/* 04 Center Stage */
+.s3 .b1{left:25%;top:19%;width:50%;height:62%}
+.s3 .b2{left:0;top:0;width:21%;height:24%}
+.s3 .b3{right:0;top:0;width:21%;height:24%}
+.s3 .b4{left:0;bottom:0;width:21%;height:24%}
+.s3 .b5{right:0;bottom:0;width:21%;height:24%}
+.s3 .p1{left:21%;top:51%;width:18%}
+.s3 .l1{left:35%;top:85%}
+
+/* 05 L Narrative */
+.s4 .b1{left:0;top:0;width:57%;height:22%}
+.s4 .b2{left:0;top:29%;width:57%;height:22%}
+.s4 .b3{left:0;bottom:0;width:57%;height:39%}
+.s4 .b4{right:0;top:0;width:38%;height:100%}
+.s4 .p1{left:57%;top:50%;width:22%}
+.s4 .l1{left:61%;top:46%}
+
+/* 06 Mosaic Z */
+.s5 .b1{left:0;top:0;width:23%;height:29%}
+.s5 .b2{left:28%;top:0;width:72%;height:29%}
+.s5 .b3{left:0;top:36%;width:48%;height:64%}
+.s5 .b4{right:0;top:38%;width:22%;height:25%}
+.s5 .b5{right:0;bottom:0;width:22%;height:25%}
+.s5 .p1{left:23%;top:29%;width:30%;transform:rotate(28deg)}
+.s5 .l1{left:38%;top:31%}
+
+/* 07 Timeline */
+.s6 .b1{left:0;top:0;width:21%;height:39%}
+.s6 .b2{left:26%;top:0;width:21%;height:39%}
+.s6 .b3{left:52%;top:0;width:21%;height:39%}
+.s6 .b4{right:0;top:0;width:21%;height:39%}
+.s6 .b5{left:13%;bottom:0;width:74%;height:39%}
+.s6 .p1{left:11%;top:50%;width:78%}
+.s6 .l1{left:39%;top:51%}
+
+/* 08 Full Bleed + Inset */
+.s7 .b1{inset:0;border-width:3px;background:#dceafb}
+.s7 .b2{left:8%;top:9%;width:31%;height:31%}
+.s7 .b3{right:8%;top:20%;width:29%;height:39%}
+.s7 .b4{left:16%;bottom:8%;width:48%;height:24%}
+.s7 .p1{left:39%;top:38%;width:20%}
+.s7 .l1{left:42%;top:36%}
+
+/* 10 Letterbox */
+.s8 .b1{left:0;top:0;width:100%;height:14%}
+.s8 .b2{left:7%;top:22%;width:58%;height:58%}
+.s8 .b3{right:0;top:22%;width:27%;height:27%}
+.s8 .b4{right:0;bottom:0;width:27%;height:27%}
+.s8 .b5{left:0;bottom:0;width:100%;height:12%}
+.s8 .p1{left:65%;top:49%;width:13%}
+.s8 .l1{left:66%;top:51%}
+
+/* 13 Sandwich */
+.s9 .b1{left:18%;right:18%;top:0;height:17%}
+.s9 .b2{left:9%;right:9%;top:23%;height:39%}
+.s9 .b3{left:0;top:69%;width:30%;height:23%}
+.s9 .b4{left:35%;top:69%;width:30%;height:23%}
+.s9 .b5{right:0;top:69%;width:30%;height:23%}
+.s9 .p1{left:50%;top:63%;width:30%}
+.s9 .l1{left:51%;top:64%}
+
+/* 14 Past Now Future */
+.s10 .b1{left:0;top:0;width:28%;height:100%}
+.s10 .b2{left:31%;top:0;width:38%;height:100%}
+.s10 .b3{right:0;top:0;width:28%;height:48%}
+.s10 .b4{right:0;bottom:0;width:28%;height:44%}
+.s10 .p1{left:28%;top:48%;width:34%}
+.s10 .l1{left:35%;top:50%}
+
+/* 16 Compare */
+.s11 .b1{left:12%;right:12%;top:0;height:20%}
+.s11 .b2{left:0;top:27%;width:46%;height:52%}
+.s11 .b3{right:0;top:27%;width:46%;height:52%}
+.s11 .b4{left:18%;right:18%;bottom:0;height:17%}
+.s11 .p1{left:46%;top:52%;width:12%}
+.s11 .l1{left:45%;top:48%}
+
+/* 17 Scene + Annotations */
+.s12 .b1{left:0;top:0;width:62%;height:100%}
+.s12 .b2{right:0;top:0;width:32%;height:20%}
+.s12 .b3{right:0;top:26%;width:32%;height:20%}
+.s12 .b4{right:0;top:52%;width:32%;height:20%}
+.s12 .b5{right:0;bottom:0;width:32%;height:20%}
+.s12 .p1{left:62%;top:31%;width:22%}
+.s12 .l1{left:65%;top:33%}
+
+/* 18 Break Point */
+.s13 .b1{left:0;top:0;width:28%;height:30%}
+.s13 .b2{right:0;top:0;width:28%;height:30%}
+.s13 .b3{left:20%;right:20%;top:28%;height:44%;transform:rotate(-2deg)}
+.s13 .b4{left:0;bottom:0;width:40%;height:22%}
+.s13 .b5{right:0;bottom:0;width:40%;height:22%}
+.s13 .p1{left:28%;top:29%;width:17%}
+.s13 .l1{left:38%;top:24%}
+
+@media(max-width:900px){
+  .top{height:auto;min-height:120px;padding:15px 20px;display:block}
+  .controls{margin-top:12px;justify-content:flex-start}
+  .main{padding:12px}
+  .meta{grid-template-columns:repeat(3,1fr);height:auto}
+  .meta-item{min-height:48px}
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<header class="top">
+  <div class="title">
+    <h1>同一故事，先比较 13 种整页骨架</h1>
+    <p>Remotion Video Layout Candidates · 只比较结构，不比较最终视觉效果</p>
+  </div>
+  <div class="controls" id="tabs"></div>
+</header>
+
+<main class="main">
+<div class="workspace">
+
+  <div class="meta">
+    <div class="meta-item">
+      <div class="meta-label">Reading Path</div>
+      <div class="meta-value" id="path"></div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Relative Area</div>
+      <div class="meta-value" id="area"></div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Visual Anchor</div>
+      <div class="meta-value" id="anchor"></div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Gutters</div>
+      <div class="meta-value" id="gutters"></div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Negative Space</div>
+      <div class="meta-value" id="negative"></div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">Content-derived Border</div>
+      <div class="meta-value" id="border"></div>
+    </div>
+  </div>
+
+  <div class="frame" id="frame">
+
+    <!-- 02 -->
+    <div class="scene s1 active" data-id="1">
+      <div class="beat anchor b1"><div><b>P1 · HERO</b><span class="tag">Beat 01 / 55%</span><br>核心场景 / 主视觉</div></div>
+      <div class="beat b2"><div><b>P2</b><span class="tag">Beat 02 / 15%</span><br>证据 A</div></div>
+      <div class="beat b3"><div><b>P3</b><span class="tag">Beat 03 / 12%</span><br>证据 B</div></div>
+      <div class="beat green b4"><div><b>P4 · END</b><span class="tag">Beat 04 / 18%</span><br>结论 / 收尾</div></div>
+      <div class="path p1"></div>
+      <div class="label l1">Hero → Rail → Answer</div>
+    </div>
+
+    <!-- 03 -->
+    <div class="scene s2" data-id="2">
+      <div class="beat anchor b1"><div><b>P1 · SCENE ANCHOR</b><span class="tag">Beat 01 / 39%</span><br>固定场景</div></div>
+      <div class="beat b2"><div><b>P2</b><span class="tag">Beat 02</span><br>信息 01</div></div>
+      <div class="beat b3"><div><b>P3</b><span class="tag">Beat 03</span><br>信息 02</div></div>
+      <div class="beat b4"><div><b>P4</b><span class="tag">Beat 04</span><br>信息 03</div></div>
+      <div class="beat green b5"><div><b>P5</b><span class="tag">Beat 05</span><br>总结</div></div>
+      <div class="path p1"></div>
+      <div class="label l1">固定锚点 → 右侧纵向阅读</div>
+    </div>
+
+    <!-- 04 -->
+    <div class="scene s3" data-id="3">
+      <div class="beat anchor b1"><div><b>P3 · CENTER</b><span class="tag">Beat 03 / 66%</span><br>核心概念</div></div>
+      <div class="beat b2"><div><b>P1</b><span class="tag">Beat 01</span><br>Context</div></div>
+      <div class="beat b3"><div><b>P2</b><span class="tag">Beat 02</span><br>Question</div></div>
+      <div class="beat b4"><div><b>P4</b><span class="tag">Beat 04</span><br>Evidence</div></div>
+      <div class="beat green b5"><div><b>P5</b><span class="tag">Beat 05</span><br>Answer</div></div>
+      <div class="path p1"></div>
+      <div class="label l1">外围 → 中心 → 外围</div>
+    </div>
+
+    <!-- 05 -->
+    <div class="scene s4" data-id="4">
+      <div class="beat b1"><div><b>P1</b><span class="tag">Beat 01</span><br>开场</div></div>
+      <div class="beat b2"><div><b>P2</b><span class="tag">Beat 02</span><br>发展</div></div>
+      <div class="beat anchor b3"><div><b>P3 · MAIN COLUMN</b><span class="tag">Beat 03 / 39%</span><br>主叙事</div></div>
+      <div class="beat green b4"><div><b>P4 · SIDE</b><span class="tag">Beat 04 / 38%</span><br>辅助内容</div></div>
+      <div class="path p1"></div>
+      <div class="label l1">主列持续推进，侧列补充</div>
+    </div>
+
+    <!-- 06 -->
+    <div class="scene s5" data-id="5">
+      <div class="beat b1"><div><b>P1</b><span class="tag">Beat 01</span><br>入口</div></div>
+      <div class="beat b2"><div><b>P2</b><span class="tag">Beat 02</span><br>展开</div></div>
+      <div class="beat anchor b3"><div><b>P3 · MAIN</b><span class="tag">Beat 03 / 28%</span><br>关键内容</div></div>
+      <div class="beat b4"><div><b>P4</b><span class="tag">Beat 04</span><br>补充</div></div>
+      <div class="beat green b5"><div><b>P5</b><span class="tag">Beat 05</span><br>结果</div></div>
+      <div class="path p1"></div>
+      <div class="label l1">Z 型视觉扫描路径</div>
+    </div>
+
+    <!-- 07 -->
+    <div class="scene s6" data-id="6">
+      <div class="beat b1"><div><b>P1 ●</b><span class="tag">25%</span><br>起点</div></div>
+      <div class="beat b2"><div><b>P2 ●</b><span class="tag">25%</span><br>发展</div></div>
+      <div class="beat anchor b3"><div><b>P3 ●</b><span class="tag">25%</span><br>关键事件</div></div>
+      <div class="beat b4"><div><b>P4 ●</b><span class="tag">25%</span><br>结果</div></div>
+      <div class="beat green b5"><div><b>SUMMARY</b><span class="tag">Beat End</span><br>时间轴总结</div></div>
+      <div class="path p1"></div>
+      <div class="label l1">时间轴是主要阅读路径</div>
+    </div>
+
+    <!-- 08 -->
+    <div class="scene s7" data-id="7">
+      <div class="beat anchor b1"><div><b>P1 · FULL BLEED</b><span class="tag">Beat 01 / 100%</span><br>完整场景背景</div></div>
+      <div class="beat b2"><div><b>P2 · INSET</b><span class="tag">Beat 02</span><br>局部信息</div></div>
+      <div class="beat b3"><div><b>P3 · OVERLAY</b><span class="tag">Beat 03</span><br>强调内容</div></div>
+      <div class="beat green b4"><div><b>P4</b><span class="tag">Beat 04</span><br>回到场景</div></div>
+      <div class="path p1"></div>
+      <div class="label l1">Scene → Inset → Overlay → Scene</div>
+    </div>
+
+    <!-- 10 -->
+    <div class="scene s8" data-id="8">
+      <div class="beat b1"><div><b>P1 · CONTEXT BAR</b><span class="tag">10%</span><br>章节 / 标题</div></div>
+      <div class="beat anchor b2"><div><b>P2 · MAIN</b><span class="tag">39%</span><br>主要视觉内容</div></div>
+      <div class="beat b3"><div><b>P3 · EVIDENCE</b><span class="tag">28%</span><br>证据</div></div>
+      <div class="beat green b4"><div><b>P4 · ANSWER</b><span class="tag">28%</span><br>答案</div></div>
+      <div class="beat b5"><div><b>END BAR</b><span class="tag">10%</span><br>收尾</div></div>
+      <div class="path p1"></div>
+      <div class="label l1">上下锁定上下文，中间自由叙事</div>
+    </div>
+
+    <!-- 13 -->
+    <div class="scene s9" data-id="9">
+      <div class="beat b1"><div><b>P1 · SETUP</b><span class="tag">Beat 01</span><br>背景条件</div></div>
+      <div class="beat anchor b2"><div><b>P2 · BIG IDEA</b><span class="tag">Beat 02 / 39%</span><br>核心概念</div></div>
+      <div class="beat b3"><div><b>P3 · EVIDENCE A</b><span class="tag">Beat 03</span><br>证据</div></div>
+      <div class="beat b4"><div><b>P4 · EVIDENCE B</b><span class="tag">Beat 04</span><br>例子</div></div>
+      <div class="beat green b5"><div><b>P5 · CONCLUSION</b><span class="tag">Beat 05</span><br>结论</div></div>
+      <div class="path p1"></div>
+      <div class="label l1">Evidence ↑ / Core / Evidence ↓</div>
+    </div>
+
+    <!-- 14 -->
+    <div class="scene s10" data-id="10">
+      <div class="beat b1"><div><b>P1 · PAST</b><span class="tag">Beat 01 / 28%</span><br>过去状态</div></div>
+      <div class="beat anchor b2"><div><b>P2 · NOW</b><span class="tag">Beat 02 / 38%</span><br>当前主状态</div></div>
+      <div class="beat b3"><div><b>P3 · FUTURE</b><span class="tag">Beat 03</span><br>未来方向</div></div>
+      <div class="beat green b4"><div><b>P4 · RESULT</b><span class="tag">Beat 04</span><br>最终结果</div></div>
+      <div class="path p1"></div>
+      <div class="label l1">Past → Now → Future → Result</div>
+    </div>
+
+    <!-- 16 -->
+    <div class="scene s11" data-id="11">
+      <div class="beat b1"><div><b>P1 · SETUP</b><span class="tag">Beat 01 / 22%</span><br>共同上下文</div></div>
+      <div class="beat anchor b2"><div><b>P2 · A</b><span class="tag">Beat 02 / 28%</span><br>方案 A</div></div>
+      <div class="beat red b3"><div><b>P3 · B</b><span class="tag">Beat 03 / 28%</span><br>方案 B</div></div>
+      <div class="beat green b4"><div><b>P4 · ANSWER</b><span class="tag">Beat 04 / 22%</span><br>比较结论</div></div>
+      <div class="path p1"></div>
+      <div class="label l1">A | B → Compare → Answer</div>
+    </div>
+
+    <!-- 17 -->
+    <div class="scene s12" data-id="12">
+      <div class="beat anchor b1"><div><b>P1 · SCENE</b><span class="tag">Beat 01 / 48%</span><br>持续大场景</div></div>
+      <div class="beat b2"><div><b>P2 · ANNOTATION 01</b><span class="tag">13%</span><br>注释点</div></div>
+      <div class="beat b3"><div><b>P3 · ANNOTATION 02</b><span class="tag">13%</span><br>注释点</div></div>
+      <div class="beat b4"><div><b>P4 · ANNOTATION 03</b><span class="tag">13%</span><br>注释点</div></div>
+      <div class="beat green b5"><div><b>P5 · SUMMARY</b><span class="tag">13%</span><br>总结</div></div>
+      <div class="path p1"></div>
+      <div class="label l1">Scene 持续存在，Annotations 依次派生</div>
+    </div>
+
+    <!-- 18 -->
+    <div class="scene s13" data-id="13">
+      <div class="beat b1"><div><b>P1</b><span class="tag">Beat 01 / 14%</span><br>铺陈</div></div>
+      <div class="beat b2"><div><b>P2</b><span class="tag">Beat 02 / 14%</span><br>铺陈</div></div>
+      <div class="beat red anchor b3"><div><b>P3 · BREAK</b><span class="tag">Beat 03 / 36%</span><br>结构性断点</div></div>
+      <div class="beat b4"><div><b>P4</b><span class="tag">Beat 04 / 18%</span><br>解释</div></div>
+      <div class="beat green b5"><div><b>P5 · NEW STATE</b><span class="tag">Beat 05 / 18%</span><br>新状态</div></div>
+      <div class="path p1"></div>
+      <div class="label l1">均匀铺陈 → BREAK → 新节奏</div>
+    </div>
+
+  </div>
+
+  <div class="caption">
+    <div>
+      <strong id="layoutName"></strong>
+      <span>　·　</span>
+      <span id="layoutDesc"></span>
+    </div>
+    <div class="nav">
+      <button onclick="prev()">←</button>
+      <button onclick="next()">→</button>
+    </div>
+  </div>
+
+</div>
+</main>
+</div>
+
+<script>
+const layouts=[
+  {
+    name:"A02 · Hero + Rail",
+    desc:"大 Hero + 右侧证据轨道 + 全宽收尾。",
+    path:"P1 Hero → P2/P3 → P4",
+    area:"55% / 15% / 12% / 18%",
+    anchor:"P1 Hero",
+    gutters:"3% / 4%",
+    negative:"Hero 内大呼吸区",
+    border:"Hero 重边框、Rail 轻边框"
+  },
+  {
+    name:"A03 · 纵向场景锚点",
+    desc:"固定场景锚点，信息在右侧分组推进。",
+    path:"P1 → P2 → P3 → P4 → P5",
+    area:"39% Anchor / 61% 信息",
+    anchor:"左侧 Scene Anchor",
+    gutters:"6% / 4%",
+    negative:"右列节拍空隙",
+    border:"Anchor 虚线外轮廓"
+  },
+  {
+    name:"A04 · Center Stage",
+    desc:"核心概念占据中央，外围承担上下文。",
+    path:"外围 → 中心 → 外围",
+    area:"中心 66%",
+    anchor:"中央 P3",
+    gutters:"5% / 8%",
+    negative:"核心周围大留白",
+    border:"中心强化边界"
+  },
+  {
+    name:"A05 · L 型主叙事",
+    desc:"左侧持续主叙事，右侧密集补充。",
+    path:"P1 → P2 → P3 → P4",
+    area:"57% / 43%",
+    anchor:"Dominant Column",
+    gutters:"6% / 5%",
+    negative:"左大右密",
+    border:"主框贯穿整屏"
+  },
+  {
+    name:"A06 · Mosaic Z",
+    desc:"非对称拼贴，让视线按 Z 型扫描。",
+    path:"左上 → 右上 → 左下 → 右下",
+    area:"9 / 24 / 28 / 10 / 10 / 19%",
+    anchor:"左下 Main",
+    gutters:"4%–5%",
+    negative:"不规则负空间",
+    border:"主格粗、小格细"
+  },
+  {
+    name:"A07 · Timeline",
+    desc:"用时间轴直接定义阅读与节奏路径。",
+    path:"P1 ● → P2 ● → P3 ● → P4 ●",
+    area:"四段约 25%",
+    anchor:"P3 关键事件",
+    gutters:"节点固定间距",
+    negative:"轴上下留白",
+    border:"边框 + 节点 + 轨道"
+  },
+  {
+    name:"A08 · Full Bleed + Inset",
+    desc:"整屏场景为底，内容以浮层派生。",
+    path:"Scene → Inset → Overlay → 回景",
+    area:"底层 100% + 浮层",
+    anchor:"Full Bleed Scene",
+    gutters:"6%–7%",
+    negative:"背景承担负空间",
+    border:"Inset 强边框"
+  },
+  {
+    name:"A10 · Letterbox + Answer",
+    desc:"上下信息带锁定上下文，中间主画面，底部强收束。",
+    path:"Top → Main → Evidence → Answer",
+    area:"10 / 39 / 28 / 10%",
+    anchor:"中间 Main",
+    gutters:"上下固定带",
+    negative:"主区最大留白",
+    border:"上下轨 + Answer 重边"
+  },
+  {
+    name:"A13 · Sandwich",
+    desc:"上下两层证据夹住中间大概念。",
+    path:"Setup → Big Idea → Evidence → Conclusion",
+    area:"17 / 39 / 23×3%",
+    anchor:"P2 Big Idea",
+    gutters:"纵向 6%",
+    negative:"核心上下清晰层次",
+    border:"核心重边，上下细边"
+  },
+  {
+    name:"A14 · Past / Now / Future",
+    desc:"横向三段时间状态，中间 Now 占主导。",
+    path:"Past → Now → Future → Result",
+    area:"28 / 38 / 28 / 28%",
+    anchor:"Now",
+    gutters:"3% / 4%",
+    negative:"左右状态区留白",
+    border:"Now 强边框表示当前状态"
+  },
+  {
+    name:"A16 · Compare Split",
+    desc:"统一上下文 → 左右平行对比 → 跨宽结论。",
+    path:"Setup → A | B → Compare Answer",
+    area:"22 / 28 / 28 / 22%",
+    anchor:"A/B Split",
+    gutters:"中轴 8%",
+    negative:"中轴分割负空间",
+    border:"A/B 不同边框语义"
+  },
+  {
+    name:"A17 · Scene + Annotations",
+    desc:"一张大场景持续存在，多个注释点依次出现。",
+    path:"Scene → Annotation 1 → 2 → 3 → Summary",
+    area:"48% Scene + 4×13%",
+    anchor:"P1 Scene",
+    gutters:"右侧注释 6%",
+    negative:"场景内部大量动画空间",
+    border:"注释框与场景细线关联"
+  },
+  {
+    name:"A18 · Break Point",
+    desc:"均匀铺陈 → 中部结构性断点 → 新节奏。",
+    path:"P1/P2 → BREAK → P4/P5",
+    area:"14 / 14 / 36 / 18 / 18%",
+    anchor:"P3 Break",
+    gutters:"Break 前后扩大",
+    negative:"断点两侧刻意留白",
+    border:"Break 粗重/倾斜边框"
+  }
+];
+
+let active=0;
+
+const tabs=document.getElementById("tabs");
+
+layouts.forEach((layout,i)=>{
+  const btn=document.createElement("button");
+  btn.className="tab";
+  btn.textContent=String(i+1).padStart(2,"0");
+  btn.onclick=()=>show(i);
+  tabs.appendChild(btn);
+});
+
+function show(i){
+  active=(i+layouts.length)%layouts.length;
+
+  document.querySelectorAll(".scene").forEach((scene,index)=>{
+    scene.classList.toggle("active",index===active);
+  });
+
+  document.querySelectorAll(".tab").forEach((tab,index)=>{
+    tab.classList.toggle("active",index===active);
+  });
+
+  const data=layouts[active];
+
+  document.getElementById("path").textContent=data.path;
+  document.getElementById("area").textContent=data.area;
+  document.getElementById("anchor").textContent=data.anchor;
+  document.getElementById("gutters").textContent=data.gutters;
+  document.getElementById("negative").textContent=data.negative;
+  document.getElementById("border").textContent=data.border;
+  document.getElementById("layoutName").textContent=data.name;
+  document.getElementById("layoutDesc").textContent=data.desc;
+}
+
+function next(){
+  show(active+1);
+}
+
+function prev(){
+  show(active-1);
+}
+
+document.addEventListener("keydown",e=>{
+  if(e.key==="ArrowRight")next();
+  if(e.key==="ArrowLeft")prev();
+});
+
+show(0);
+</script>
+</body>
+</html>

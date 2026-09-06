@@ -1,0 +1,26 @@
+# 界面偏好设置模块 API 定义
+# 参考: docs/api/preference.md
+# 对应 webapp/server.py 中 /api/preferences 相关接口(画笔文字与笔触细节级别)
+
+# 获取界面偏好设置
+GetPreferences:
+  method: GET
+  path: /api/preferences
+  package: preference
+  filename: preference
+  res:
+    pen_text: string # 画笔文字(最多12字)
+    stroke_detail: string # 笔触细节级别:light/standard/detailed/full
+
+# 保存界面偏好设置
+SavePreferences:
+  method: POST
+  path: /api/preferences
+  package: preference
+  filename: preference
+  req:
+    pen_text: string # 画笔文字(最多12字)
+    stroke_detail: string %enum(light,standard,detailed,full) # 笔触细节级别
+  res:
+    pen_text: string # 画笔文字
+    stroke_detail: string # 笔触细节级别

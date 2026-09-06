@@ -1,0 +1,245 @@
+# 视频任务模块 API 定义
+# 参考: docs/api/job.md
+# 对应 webapp/server.py 中 /api/jobs 相关接口(白板视频制作任务的全流程管理)
+# 任务快照 JobSnapshot 供本模块所有接口复用
+
+# ==================== 通用任务快照 ====================
+
+# 创建白板视频制作任务
+CreateJob:
+  method: POST
+  path: /api/jobs
+  package: job
+  filename: job
+  req:
+    copy: string %min(10) # 口播文案,至少10字(表单字段名为 copy)
+    style: string # 画面风格名称
+    scenes_per_image: int %gte(1),lte(4) # 每张分镜图承载的镜头数
+    task_name: string # 自定义任务名
+    pen_text: string # 画笔文字(最多12字)
+    include_key_text: bool # 是否在分镜图上标注重点文字
+    include_subtitles: bool # 是否随视频渲染字幕
+    stroke_detail: string %enum(light,standard,detailed,full) # 笔触细节级别
+    reference_mode: string %enum(standard,custom) # 参考模式:standard/custom
+    character_manifest: string # 人物参考清单(JSON 字符串)
+    style_reference: string # 风格参考图(上传文件)
+    character_references: [string] # 人物参考图(上传文件数组)
+  res:
+    id: string # 任务ID
+    task_name: string # 任务名称
+    status: string # 状态:queued/running/done/error
+    stage: string # 当前阶段描述
+    progress: int # 进度 1-100
+    job_type: string # 任务类型:generate/rerender
+    created_at: float64 # 创建时间(时间戳秒)
+    started_at: float64 # 开始时间(时间戳秒)
+    finished_at: float64 # 完成时间(时间戳秒)
+    current_phase: string # 当前进行中的阶段key(无则为空)
+    current_elapsed: float64 # 当前阶段已耗时(秒)
+    total_elapsed: float64 # 总耗时(秒)
+    queue_stage: string # 排队阶段:voice/model/render
+    queue_order: int64 # 排队序号
+    queue_ahead: int # 前方排队的任务数
+    client_ip: string # 提交任务来源IP
+    style: string # 画面风格名称
+    scenes_per_image: int # 每张分镜图承载的镜头数
+    duration: float64 # 口播音频时长(秒)
+    scenes: int # 分镜总数
+    boards: int # 分镜图总数
+    completed_boards: int # 已生成的分镜图数
+    completed_videos: int # 已渲染的视频段数
+    reference_mode: string # 参考模式:standard/custom
+    character_count: int # 人物参考数量
+    pen_text: string # 画笔文字
+    include_key_text: bool # 是否标注重点文字
+    include_subtitles: bool # 是否渲染字幕
+    stroke_detail: string # 笔触细节级别
+    error: string # 错误信息(无则为空)
+    result_url: string # 成品视频下载地址
+    can_retry: bool # 失败任务是否可继续
+    can_rerender: bool # 是否可重新渲染
+    timings: json # 各阶段耗时明细
+
+# 任务列表
+ListJobs:
+  method: GET
+  path: /api/jobs?limit=int
+  package: job
+  filename: job
+  req:
+    limit: int %gte(1),lte(100) # 每页条数(默认20,上限100)
+  res:
+    items:
+      - id: string # 任务ID
+        task_name: string # 任务名称
+        status: string # 状态:queued/running/done/error
+        stage: string # 当前阶段描述
+        progress: int # 进度 1-100
+        job_type: string # 任务类型:generate/rerender
+        created_at: float64 # 创建时间(时间戳秒)
+        started_at: float64 # 开始时间(时间戳秒)
+        finished_at: float64 # 完成时间(时间戳秒)
+        current_phase: string # 当前进行中的阶段key(无则为空)
+        current_elapsed: float64 # 当前阶段已耗时(秒)
+        total_elapsed: float64 # 总耗时(秒)
+        queue_stage: string # 排队阶段:voice/model/render
+        queue_order: int64 # 排队序号
+        queue_ahead: int # 前方排队的任务数
+        client_ip: string # 提交任务来源IP
+        style: string # 画面风格名称
+        scenes_per_image: int # 每张分镜图承载的镜头数
+        duration: float64 # 口播音频时长(秒)
+        scenes: int # 分镜总数
+        boards: int # 分镜图总数
+        completed_boards: int # 已生成的分镜图数
+        completed_videos: int # 已渲染的视频段数
+        reference_mode: string # 参考模式:standard/custom
+        character_count: int # 人物参考数量
+        pen_text: string # 画笔文字
+        include_key_text: bool # 是否标注重点文字
+        include_subtitles: bool # 是否渲染字幕
+        stroke_detail: string # 笔触细节级别
+        error: string # 错误信息(无则为空)
+        result_url: string # 成品视频下载地址
+        can_retry: bool # 失败任务是否可继续
+        can_rerender: bool # 是否可重新渲染
+        timings: json # 各阶段耗时明细
+
+# 任务详情
+GetJob:
+  method: GET
+  path: /api/jobs/:id
+  package: job
+  filename: job
+  res:
+    id: string # 任务ID
+    task_name: string # 任务名称
+    status: string # 状态:queued/running/done/error
+    stage: string # 当前阶段描述
+    progress: int # 进度 1-100
+    job_type: string # 任务类型:generate/rerender
+    created_at: float64 # 创建时间(时间戳秒)
+    started_at: float64 # 开始时间(时间戳秒)
+    finished_at: float64 # 完成时间(时间戳秒)
+    current_phase: string # 当前进行中的阶段key(无则为空)
+    current_elapsed: float64 # 当前阶段已耗时(秒)
+    total_elapsed: float64 # 总耗时(秒)
+    queue_stage: string # 排队阶段:voice/model/render
+    queue_order: int64 # 排队序号
+    queue_ahead: int # 前方排队的任务数
+    client_ip: string # 提交任务来源IP
+    style: string # 画面风格名称
+    scenes_per_image: int # 每张分镜图承载的镜头数
+    duration: float64 # 口播音频时长(秒)
+    scenes: int # 分镜总数
+    boards: int # 分镜图总数
+    completed_boards: int # 已生成的分镜图数
+    completed_videos: int # 已渲染的视频段数
+    reference_mode: string # 参考模式:standard/custom
+    character_count: int # 人物参考数量
+    pen_text: string # 画笔文字
+    include_key_text: bool # 是否标注重点文字
+    include_subtitles: bool # 是否渲染字幕
+    stroke_detail: string # 笔触细节级别
+    error: string # 错误信息(无则为空)
+    result_url: string # 成品视频下载地址
+    can_retry: bool # 失败任务是否可继续
+    can_rerender: bool # 是否可重新渲染
+    timings: json # 各阶段耗时明细
+
+# 继续失败任务(从断点恢复)
+RetryJob:
+  method: POST
+  path: /api/jobs/:id/retry
+  package: job
+  filename: job
+  res:
+    id: string # 任务ID
+    task_name: string # 任务名称
+    status: string # 状态:queued/running/done/error
+    stage: string # 当前阶段描述
+    progress: int # 进度 1-100
+    job_type: string # 任务类型:generate/rerender
+    created_at: float64 # 创建时间(时间戳秒)
+    started_at: float64 # 开始时间(时间戳秒)
+    finished_at: float64 # 完成时间(时间戳秒)
+    current_phase: string # 当前进行中的阶段key(无则为空)
+    current_elapsed: float64 # 当前阶段已耗时(秒)
+    total_elapsed: float64 # 总耗时(秒)
+    queue_stage: string # 排队阶段:voice/model/render
+    queue_order: int64 # 排队序号
+    queue_ahead: int # 前方排队的任务数
+    client_ip: string # 提交任务来源IP
+    style: string # 画面风格名称
+    scenes_per_image: int # 每张分镜图承载的镜头数
+    duration: float64 # 口播音频时长(秒)
+    scenes: int # 分镜总数
+    boards: int # 分镜图总数
+    completed_boards: int # 已生成的分镜图数
+    completed_videos: int # 已渲染的视频段数
+    reference_mode: string # 参考模式:standard/custom
+    character_count: int # 人物参考数量
+    pen_text: string # 画笔文字
+    include_key_text: bool # 是否标注重点文字
+    include_subtitles: bool # 是否渲染字幕
+    stroke_detail: string # 笔触细节级别
+    error: string # 错误信息(无则为空)
+    result_url: string # 成品视频下载地址
+    can_retry: bool # 失败任务是否可继续
+    can_rerender: bool # 是否可重新渲染
+    timings: json # 各阶段耗时明细
+
+# 重新渲染已完成的视频(复用原图与配音,生成新画笔/字幕/笔触)
+RerenderJob:
+  method: POST
+  path: /api/jobs/:id/rerender
+  package: job
+  filename: job
+  req:
+    task_name: string # 新任务名称
+    pen_text: string # 画笔文字(最多12字)
+    include_key_text: bool # 是否在分镜图上标注重点文字
+    include_subtitles: bool # 是否随视频渲染字幕
+    stroke_detail: string %enum(light,standard,detailed,full) # 笔触细节级别
+  res:
+    id: string # 任务ID
+    task_name: string # 任务名称
+    status: string # 状态:queued/running/done/error
+    stage: string # 当前阶段描述
+    progress: int # 进度 1-100
+    job_type: string # 任务类型:generate/rerender
+    created_at: float64 # 创建时间(时间戳秒)
+    started_at: float64 # 开始时间(时间戳秒)
+    finished_at: float64 # 完成时间(时间戳秒)
+    current_phase: string # 当前进行中的阶段key(无则为空)
+    current_elapsed: float64 # 当前阶段已耗时(秒)
+    total_elapsed: float64 # 总耗时(秒)
+    queue_stage: string # 排队阶段:voice/model/render
+    queue_order: int64 # 排队序号
+    queue_ahead: int # 前方排队的任务数
+    client_ip: string # 提交任务来源IP
+    style: string # 画面风格名称
+    scenes_per_image: int # 每张分镜图承载的镜头数
+    duration: float64 # 口播音频时长(秒)
+    scenes: int # 分镜总数
+    boards: int # 分镜图总数
+    completed_boards: int # 已生成的分镜图数
+    completed_videos: int # 已渲染的视频段数
+    reference_mode: string # 参考模式:standard/custom
+    character_count: int # 人物参考数量
+    pen_text: string # 画笔文字
+    include_key_text: bool # 是否标注重点文字
+    include_subtitles: bool # 是否渲染字幕
+    stroke_detail: string # 笔触细节级别
+    error: string # 错误信息(无则为空)
+    result_url: string # 成品视频下载地址
+    can_retry: bool # 失败任务是否可继续
+    can_rerender: bool # 是否可重新渲染
+    timings: json # 各阶段耗时明细
+
+# 下载成品视频(返回 MP4 文件流,非 JSON)
+DownloadJob:
+  method: GET
+  path: /api/jobs/:id/download
+  package: job
+  filename: job
